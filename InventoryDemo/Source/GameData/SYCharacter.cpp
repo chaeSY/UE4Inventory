@@ -14,7 +14,7 @@ ASYCharacter::ASYCharacter()
 void ASYCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	AddCash(10000);
 }
 
 void ASYCharacter::Tick(float DeltaTime)
@@ -72,7 +72,7 @@ void ASYCharacter::AddCash(int InAddedCash)
 	Cash += InAddedCash;
 }
 
-bool ASYCharacter::TryBuyItem(FItemInfo InItemInfo)
+bool ASYCharacter::TryBuyItem(const FItemInfo& InItemInfo)
 {
 	ASYPlayerController* SYController = Cast<ASYPlayerController>(GetController());
 	if (!SYController || !SYController->WidgetManager)
@@ -88,6 +88,7 @@ bool ASYCharacter::TryBuyItem(FItemInfo InItemInfo)
 	if (InventoryWidget->TryAddItem(InItemInfo))
 	{
 		Cash -= InItemInfo.Price;
+		InventoryWidget->OnBuyItem();
 		return true;
 	}
 	else

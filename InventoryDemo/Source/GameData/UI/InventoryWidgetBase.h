@@ -12,6 +12,13 @@
 /**
  * 
  */
+
+struct FInventoryItemInfo : public FItemInfo
+{
+	int SlotIndex = INDEX_NONE;
+	static FInventoryItemInfo Create(const FItemInfo& ItemInfo, int SlotIndex);	
+};
+
 UCLASS(Blueprintable)
 class GAMEDATA_API UInventoryWidgetBase : public USYWidgetBase
 {
@@ -20,10 +27,10 @@ class GAMEDATA_API UInventoryWidgetBase : public USYWidgetBase
 	enum { EquipmentTab = 0, ConsumableTab = 1, EtcTab = 2, Tab_End };
 
 public:
-	FItemInfo GetItemInfo(int tabIndex, int slotIndex);
-	void	  SetItemInfo(int TabIndex, int SlotIndex, FItemInfo ItemInfo);
+	auto TryGetItemInfo(int TabIndex, int SlotIndex) -> const FInventoryItemInfo*;
+	auto GetItemInfo(int tabIndex, int slotIndex)	 -> FInventoryItemInfo;
 
-	bool TryAddItem(FItemInfo NewItemInfo);
+	bool TryAddItem(const FItemInfo& AddedItemInfo);
 	bool TrySubtractItem(const FItemInfo& SubtractItemInfo, int SubtractCount);
 	bool TrySubtractItem(int TabIndex, int SlotIndex, int SubtractCount);
 	void RemoveItem(int TabIndex, int SlotIndex);
@@ -46,30 +53,33 @@ private:
 	void InitContainer();
 	int	 GetEmptySlotIndex(int TabIndex);
 	int	 GetEmptySlotCount(int TabIndex);
+
+	int  GetItemCount(FItemKey ItemKey);
+	void UpdateItemCount(int TabIndex, int SlotIndex, int ItemCount);
+
+	auto GetItemInfoList(FItemKey ItemKey)->TArray<const FInventoryItemInfo*>;
+	void SetItemInfo(int TabIndex, const FInventoryItemInfo& NewItemInfo);
+	void UpdateItemInfo(const FInventoryItemInfo& ItemInfo);
+	void RemoveItemInfo(int TabIndex, int SlotIndex);
+
 	bool CanAddItem(const FItemInfo& NewItemInfo);
-	void AddItem(FItemInfo newItemInfo, int SlotIndex = INDEX_NONE);
-	void SubtractItem(int TabIndex, int SlotIndex, int ItemCount);
-	void SwapItem(int LeftSlotIndex, int RightSlotIndex);
-	
+	void AddItem(const FItemInfo& AddedItemInfo, int SlotIndex);
+	void SwapItem(int SrcSlotIndex, int DstSlotIndex);
+
 	int ConvertItemTypeToTabIndex(EItemType ItemType);
 
 private:
-	//widget
 	TArray<class UItemSlotWidgetBase*> ItemSlotWidgetList;
 	class UButton* TabButton[Tab_End];
 	class UTextBlock* CashText;
 	class UButton* AddCashButton;
 
-	//container
 	int CurrentTabIndex;
-	TMap<int, TArray<FItemInfo>>	 ItemInfoListMap;		// key: tabIndex Value: ItemInfoList
-	TMap<FItemKey, FItemInfo>		 ItemInfoMap;			// Key: ItemKey	 Value: ItemInfo
-	TMap<FItemKey, TArray<int>>		 ItemPositionListMap;	// Key: ItemKey	 Value: SlotIndexList
 	using ArrayHeap = TArray<int>;
-	TMap<int, ArrayHeap>			 EmptySlotMap;			// Key: tabIndex Value: SlotIndexHeap
+	TMap<int, TArray<FInventoryItemInfo>>	ItemInfoListMap;		// key: TabIndex Value: ItemInfoList
+	TMap<int, ArrayHeap>					EmptySlotMap;			// Key: TabIndex Value: SlotIndexHeap
 
 private:
-	//HACK
 	UFUNCTION()
 	void OnClickEquipmentTab();
 	

@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "ItemSlotWidgetBase.h"
 #include "Engine/DataTable.h"
 #include "Engine/Texture2D.h"
@@ -66,7 +65,6 @@ void UItemSlotWidgetBase::UpdateSlot(const FItemInfo& InItemInfo)
 		}
 		else if (InItemInfo.ItemKey.Type == EItemType::Equipment)
 		{
-			// todo : item type to item table
 			FSYTableEquipmentItem* TableRow = GameDataManager->GetGameData<FSYTableEquipmentItem>(ETableType::EquipmentItem, InItemInfo.ItemKey.ID);
 			if (TableRow)
 				ItemSlotIcon->SetBrushFromSoftTexture(TableRow->ItemIcon);

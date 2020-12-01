@@ -21,6 +21,7 @@ void UStoreWidgetBase::NativeConstruct()
 	SetVisibility(ESlateVisibility::Hidden);
 
 	BindWidget();
+	UpdateStoreItemInfo(1); // Test
 	UpdateWidgetSlotAll();
 }
 
@@ -48,31 +49,21 @@ void UStoreWidgetBase::OnButtonDown(class UButtonDownOperation* InButtonDownOp)
 	}
 }
 
-void UStoreWidgetBase::TryBuyItem(int StoreSlotIndex)
+bool UStoreWidgetBase::TryBuyItem(int StoreSlotIndex)
 {
 	ASYPlayerController* SYController = Cast<ASYPlayerController>(GetOwningPlayer());
 	if (!SYController)
-		return;
+		return false;
 
 	ASYCharacter* Character = Cast<ASYCharacter>(SYController->GetCharacter());
 	if (!Character)
-		return;
+		return false;
 
 	if (!StoreItemInfoList.IsValidIndex(StoreSlotIndex))
-		return;
+		return false;
 
 	const FItemInfo& StoreItemInfo = StoreItemInfoList[StoreSlotIndex];
-	if (Character->TryBuyItem(StoreItemInfo))
-	{
-		if (SYController->WidgetManager)
-		{
-			UInventoryWidgetBase* InventoryWidget = SYController->WidgetManager->GetWidget<UInventoryWidgetBase>(EUINumber::Inventory);
-			if (InventoryWidget)
-			{
-				InventoryWidget->OnBuyItem();
-			}
-		}
-	}
+	return Character->TryBuyItem(StoreItemInfo);
 }
 
 void UStoreWidgetBase::UpdateStoreItemInfo(int InStoreClassID)
@@ -101,7 +92,7 @@ void UStoreWidgetBase::UpdateStoreItemInfo(int InStoreClassID)
 void UStoreWidgetBase::BindWidget()
 {
 	// Bind SlotWidget
-	for (int StoreSlotIndex = 0; StoreSlotIndex < MaxSlotCount; ++StoreSlotIndex)
+	for (int StoreSlotIndex = 0; StoreSlotIndex < MaxStoreSlotCount; ++StoreSlotIndex)
 	{
 		FString WidgetName = FString::Printf(TEXT("ItemSlot_%d"), StoreSlotIndex);
 		UItemSlotWidgetBase* ItemSlotWidget = Cast<UItemSlotWidgetBase>(GetWidgetFromName(*WidgetName));
@@ -134,7 +125,7 @@ void UStoreWidgetBase::BindWidget()
 
 void UStoreWidgetBase::UpdateWidgetSlotAll()
 {
-	for (int SlotIndex = 0; SlotIndex < MaxSlotCount; ++SlotIndex)
+	for (int SlotIndex = 0; SlotIndex < MaxStoreSlotCount; ++SlotIndex)
 	{
 		if (StoreItemInfoList.IsValidIndex(SlotIndex))
 		{

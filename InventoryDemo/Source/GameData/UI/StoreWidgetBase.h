@@ -10,19 +10,20 @@
 /**
  * 
  */
+
 class UItemSlotWidgetBase;
 UCLASS()
 class GAMEDATA_API UStoreWidgetBase : public USYWidgetBase
 {
 	GENERATED_BODY()
-	enum {MaxSlotCount = 20};
+	enum {MaxStoreSlotCount = 20};
 
 private:
 	virtual void NativeConstruct() final;
 	virtual void OnDragDrop(class UDragDropOperation* InDragDropOp) final;
 	virtual void OnButtonDown(class UButtonDownOperation* InButtonDownOp) final;
 	
-	void TryBuyItem(int StoreSlotIndex);
+	bool TryBuyItem(int StoreSlotIndex);
 	void UpdateStoreItemInfo(int InStoreClassID);
 
 	void BindWidget();

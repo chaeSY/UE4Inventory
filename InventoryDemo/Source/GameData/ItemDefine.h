@@ -63,9 +63,9 @@ struct FItemInfo
 {
 	FItemKey ItemKey;
 	int	Count = 0;
-	int MaxStackCount = 0;
 	int Price = 0;
-
-	bool IsStackable() const;
+	int MaxStackCount = 0;
+	
 	static FItemInfo CreateItemInfo(const UObject* WorldContextObject, EItemType ItemType, int ItemID);
+	bool   IsStackable() const;
 };

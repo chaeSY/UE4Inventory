@@ -15,6 +15,160 @@
 #include "Components/Button.h"
 #include "Components/Border.h"
 #include "Kismet/GameplayStatics.h"
+#include "HAL/UnrealMemory.h"
+
+FInventoryItemInfo FInventoryItemInfo::Create(const FItemInfo& ItemInfo, int SlotIndex)
+{
+	FInventoryItemInfo InventoryItemInfo;
+	FMemory::Memcpy(&InventoryItemInfo, &ItemInfo, sizeof(FItemInfo));
+	InventoryItemInfo.SlotIndex = SlotIndex;
+
+	return InventoryItemInfo;
+}
+
+auto UInventoryWidgetBase::TryGetItemInfo(int TabIndex, int SlotIndex) -> const FInventoryItemInfo*
+{
+	TArray<FInventoryItemInfo>* ItemInfoList = ItemInfoListMap.Find(TabIndex);
+	if (ItemInfoList && ItemInfoList->IsValidIndex(SlotIndex))
+	{
+		return &(*ItemInfoList)[SlotIndex];
+	}
+
+	return nullptr;
+}
+
+auto UInventoryWidgetBase::GetItemInfo(int TabIndex, int SlotIndex) -> FInventoryItemInfo
+{
+	TArray<FInventoryItemInfo>* itemInfoList = ItemInfoListMap.Find(TabIndex);
+	if (itemInfoList && itemInfoList->IsValidIndex(SlotIndex))
+	{
+		return (*itemInfoList)[SlotIndex];
+	}
+
+	return FInventoryItemInfo();
+}
+
+bool UInventoryWidgetBase::TryAddItem(const FItemInfo& AddedItemInfo)
+{
+	if (!CanAddItem(AddedItemInfo))
+		return false;
+
+	int TabIndex = ConvertItemTypeToTabIndex(AddedItemInfo.ItemKey.Type);
+	if (!AddedItemInfo.IsStackable())
+	{
+		int SlotIndex = GetEmptySlotIndex(TabIndex);
+		AddItem(AddedItemInfo, SlotIndex);
+	}
+	else // IsStackable()
+	{
+		int RemainNewItemCount = AddedItemInfo.Count;
+		TArray<const FInventoryItemInfo*> ItemInfoList = GetItemInfoList(AddedItemInfo.ItemKey);
+		for (int i = 0; i < ItemInfoList.Num(); ++i)
+		{
+			const FInventoryItemInfo& ItemInfo = *ItemInfoList[i];
+			int AddableItemCount = ItemInfo.MaxStackCount - ItemInfo.Count;
+			if (AddableItemCount != 0)
+			{
+				int AddItemCount = FMath::Clamp(RemainNewItemCount, 0, AddableItemCount);
+				int ResultItemCount = AddItemCount + ItemInfo.Count;
+				UpdateItemCount(TabIndex, ItemInfo.SlotIndex, ResultItemCount);
+
+				RemainNewItemCount -= AddItemCount;
+				if (RemainNewItemCount <= 0)
+					break;
+			}
+		}
+
+		if (RemainNewItemCount > 0)
+		{
+			FItemInfo NewItemInfo = AddedItemInfo;
+			NewItemInfo.Count = RemainNewItemCount;
+
+			int SlotIndex = GetEmptySlotIndex(TabIndex);
+			AddItem(NewItemInfo, SlotIndex);
+		}
+	}
+
+	return true;
+}
+
+bool UInventoryWidgetBase::TrySubtractItem(const FItemInfo& SubtractItemInfo, int SubtractCount)
+{
+	int ItemCount = GetItemCount(SubtractItemInfo.ItemKey);
+	if (ItemCount < SubtractCount)
+		return false;
+
+	int TabIndex = ConvertItemTypeToTabIndex(SubtractItemInfo.ItemKey.Type);
+
+	int RemainSubtractCount = SubtractCount;
+	TArray<const FInventoryItemInfo*> ItemInfoList = GetItemInfoList(SubtractItemInfo.ItemKey);
+	for (int i = 0; i < ItemInfoList.Num(); ++i)
+	{
+		const FInventoryItemInfo& ItemInfo = *(ItemInfoList[i]);
+		if (RemainSubtractCount >= ItemInfo.Count)
+		{
+			RemainSubtractCount -= ItemInfo.Count;
+			RemoveItem(TabIndex, ItemInfo.SlotIndex);
+
+			if (RemainSubtractCount == 0)
+				break;
+		}
+		else if (RemainSubtractCount < ItemInfo.Count)
+		{
+			int RemainCount = ItemInfo.Count - RemainSubtractCount;
+			UpdateItemCount(TabIndex, ItemInfo.SlotIndex, RemainCount);
+			break;
+		}
+	}
+
+	return true;
+}
+
+bool UInventoryWidgetBase::TrySubtractItem(int TabIndex, int SlotIndex, int SubtractCount)
+{
+	const FItemInfo* ItemInfo = TryGetItemInfo(TabIndex, SlotIndex);
+	if (!ItemInfo)
+		return false;
+
+	if (ItemInfo->Count < SubtractCount)
+		return false;
+
+	if (SubtractCount == ItemInfo->Count)
+	{
+		RemoveItem(TabIndex, SlotIndex);
+	}
+	else
+	{
+		int RemainItemCount = ItemInfo->Count - SubtractCount;
+		UpdateItemCount(TabIndex, SlotIndex, RemainItemCount);
+	}
+
+	return true;
+}
+
+void UInventoryWidgetBase::RemoveItem(int TabIndex, int SlotIndex)
+{
+	RemoveItemInfo(TabIndex, SlotIndex);
+
+	if (CurrentTabIndex == TabIndex)
+	{
+		UpdateWidgetItemSlot(SlotIndex);
+	}
+}
+
+void UInventoryWidgetBase::OnBuyItem()
+{
+	UpdateWidgetCash();
+}
+
+void UInventoryWidgetBase::OnClickTab(int TabIndex)
+{
+	int PrevTabIndex = CurrentTabIndex;
+	CurrentTabIndex = TabIndex;
+
+	UpdateWidgetTabColor(PrevTabIndex);
+	UpdateWidgetItemSlotAll();
+}
 
 void UInventoryWidgetBase::NativeConstruct()
 {
@@ -29,257 +183,49 @@ void UInventoryWidgetBase::NativeConstruct()
 	UpdateWidgetCash();
 }
 
-void UInventoryWidgetBase::OnClickTab(int TabIndex)
+void UInventoryWidgetBase::OnDragDrop(UDragDropOperation* InDragDropOp)
 {
-	int PrevTabIndex = CurrentTabIndex;
-	CurrentTabIndex = TabIndex;
-
-	UpdateWidgetTabColor(PrevTabIndex);
-	UpdateWidgetItemSlotAll();
-}
-
-bool UInventoryWidgetBase::CanAddItem(const FItemInfo& NewItemInfo)
-{
-	int TabIndex = ConvertItemTypeToTabIndex(NewItemInfo.ItemKey.Type);
-	int EmptySlotCount = GetEmptySlotCount(TabIndex);
-	
-	if (EmptySlotCount != 0)
-		return true;
-
-	if (NewItemInfo.IsStackable())
+	if (InDragDropOp->IsA(UDragDropSlot::StaticClass()))
 	{
-		TArray<int>* ItemPositionList = ItemPositionListMap.Find(NewItemInfo.ItemKey);
-		if (ItemPositionList)
+		UDragDropSlot* DragDrop = Cast<UDragDropSlot>(InDragDropOp);
+		if (DragDrop->ToUINumber == EUINumber::Inventory)
 		{
-			int AddableItemCount = 0;
-			for (int i = 0; i < ItemPositionList->Num(); ++i)
+			if (DragDrop->FromSlotIndex == DragDrop->ToSlotIndex)
 			{
-				const FItemInfo& ItemInfo = GetItemInfo(TabIndex, (*ItemPositionList)[i]);
-				AddableItemCount += ItemInfo.MaxStackCount - ItemInfo.Count;
-			
-				if (AddableItemCount >= NewItemInfo.Count)
-					return true;
+				return;
 			}
-		}
-	}
-	return false;
-}
 
-bool UInventoryWidgetBase::TryAddItem(FItemInfo NewItemInfo)
-{
-	if(!CanAddItem(NewItemInfo))
-		return false;
-
-	int TabIndex = ConvertItemTypeToTabIndex(NewItemInfo.ItemKey.Type);
-	if (NewItemInfo.IsStackable())
-	{
-		int RemainNewItemCount = NewItemInfo.Count;
-		TArray<int>* ItemPositionList = ItemPositionListMap.Find(NewItemInfo.ItemKey);
-		if (ItemPositionList)
-		{
-			for (int i = 0; i < ItemPositionList->Num(); ++i)
+			const FInventoryItemInfo* SrcItemInfo = TryGetItemInfo(CurrentTabIndex, DragDrop->FromSlotIndex);
+			const FInventoryItemInfo* DstItemInfo = TryGetItemInfo(CurrentTabIndex, DragDrop->ToSlotIndex);
+			if (SrcItemInfo && DstItemInfo)
 			{
-				int SlotIndex = (*ItemPositionList)[i];
-				FItemInfo ItemInfo = GetItemInfo(TabIndex, SlotIndex);
-				int AddableItemCount = ItemInfo.MaxStackCount - ItemInfo.Count;
-				if (AddableItemCount != 0)
+				bool IsEmptySrcSlot = SrcItemInfo->ItemKey.ID == 0;
+				bool IsEmptyDstSlot = DstItemInfo->ItemKey.ID == 0;
+				if (!IsEmptySrcSlot)
 				{
-					int AddItemCount = FMath::Clamp(RemainNewItemCount, 0, AddableItemCount);
-					int ResultItemCount = AddItemCount + ItemInfo.Count;
-					ItemInfo.Count = ResultItemCount;
-					AddItem(ItemInfo, SlotIndex);
-			
-					RemainNewItemCount -= AddItemCount;
-					if (RemainNewItemCount <= 0)
-						break;
+					if (IsEmptyDstSlot)
+					{
+						AddItem(*SrcItemInfo, DragDrop->ToSlotIndex);
+						RemoveItem(CurrentTabIndex, DragDrop->FromSlotIndex);
+					}
+					else // !IsEmptyDstSlot
+					{
+						SwapItem(DragDrop->FromSlotIndex, DragDrop->ToSlotIndex);
+					}
 				}
 			}
 		}
+	}
+}
 
-		if (RemainNewItemCount > 0)
+void UInventoryWidgetBase::OnButtonDown(class UButtonDownOperation* InButtonDownOp)
+{
+	if (InButtonDownOp->IsA(UButtonDownSlot::StaticClass()))
+	{
+		UButtonDownSlot* ButtonDownOp = Cast<UButtonDownSlot>(InButtonDownOp);
+		if (ButtonDownOp->PressedKey == EKeys::RightMouseButton)
 		{
-			NewItemInfo.Count = RemainNewItemCount;
-			AddItem(NewItemInfo);
-		}
-	}
-	else // !IsStackable()
-	{
-		AddItem(NewItemInfo);
-	}
-
-	return true;
-}
-
-bool UInventoryWidgetBase::TrySubtractItem(const FItemInfo& SubtractItemInfo, int SubtractCount)
-{
-	FItemInfo* ItemInfo = ItemInfoMap.Find(SubtractItemInfo.ItemKey);
-	if(!ItemInfo)
-		return false;
-
-	if(ItemInfo->Count < SubtractItemInfo.Count)
-		return false;
-
-	TArray<int>* ItemPositionList = ItemPositionListMap.Find(SubtractItemInfo.ItemKey);
-	if (!ItemPositionList)
-		return false;
-
-	int TabIndex = ConvertItemTypeToTabIndex(SubtractItemInfo.ItemKey.Type);
-	int RemainSubtractCount = SubtractCount;
-	for (int i = 0; i < ItemPositionList->Num(); ++i)
-	{
-		int SlotIndex = (*ItemPositionList)[i];
-		FItemInfo ItemInfoInSlot = GetItemInfo(TabIndex, SlotIndex);
-		if (RemainSubtractCount >= ItemInfoInSlot.Count)
-		{
-			RemoveItem(TabIndex, SlotIndex);
-			RemainSubtractCount -= ItemInfoInSlot.Count;
-			if(RemainSubtractCount == 0)
-				break;
-		}
-		else if (RemainSubtractCount < ItemInfoInSlot.Count)
-		{
-			SubtractItem(TabIndex, SlotIndex, RemainSubtractCount);
-			break;
-		}
-	}
-
-	return true;
-}
-
-bool UInventoryWidgetBase::TrySubtractItem(int TabIndex, int SlotIndex, int SubtractCount)
-{
-	TArray<FItemInfo>* ItemInfoList = ItemInfoListMap.Find(TabIndex);
-	if(!ItemInfoList)
-		return false;
-
-	if(!ItemInfoList->IsValidIndex(SlotIndex))
-		return false;
-
-	const FItemInfo& SubtractItemInfo = (*ItemInfoList)[SlotIndex];
-	if (SubtractCount >= SubtractItemInfo.Count)
-	{
-		RemoveItem(TabIndex, SlotIndex);
-	}
-	else 
-	{
-		SubtractItem(TabIndex, SlotIndex, SubtractCount);
-	}
-
-	return true;
-}
-
-void UInventoryWidgetBase::RemoveItem(int TabIndex, int SlotIndex)
-{
-	FItemInfo ItemInfo = GetItemInfo(TabIndex, SlotIndex);
-	if (ItemInfo.ItemKey.ID == INVALID_CLASSID)
-		return;
-
-	SetItemInfo(TabIndex, SlotIndex, FItemInfo());
-
-	if (CurrentTabIndex == TabIndex)
-	{
-		UpdateWidgetItemSlot(SlotIndex);
-	}
-}
-
-void UInventoryWidgetBase::AddItem(FItemInfo newItemInfo, int InSlotIndex /* = INDEX_NONE */)
-{
-	int TabIndex = ConvertItemTypeToTabIndex(newItemInfo.ItemKey.Type);
-	int SlotIndex = InSlotIndex == INDEX_NONE ? GetEmptySlotIndex(TabIndex) : InSlotIndex;
-
-	SetItemInfo(TabIndex, SlotIndex, newItemInfo);
-	
-	if (CurrentTabIndex == TabIndex)
-	{
-		UpdateWidgetItemSlot(SlotIndex);
-	}
-}
-
-void UInventoryWidgetBase::SubtractItem(int TabIndex, int SlotIndex, int ItemCount)
-{
-	FItemInfo ItemInfo = GetItemInfo(TabIndex, SlotIndex);
-	if (ItemInfo.ItemKey.ID == INVALID_CLASSID)
-		return;
-	
-	ItemInfo.Count -= ItemCount;
-	SetItemInfo(TabIndex, SlotIndex, ItemInfo);
-	
-	//update
-	if (CurrentTabIndex == TabIndex)
-	{
-		UpdateWidgetItemSlot(SlotIndex);
-	}
-}
-
-void UInventoryWidgetBase::OnBuyItem()
-{
-	UpdateWidgetCash();
-}
-
-void UInventoryWidgetBase::UpdateWidgetItemSlot(int SlotIndex)
-{
-	if(!ItemSlotWidgetList.IsValidIndex(SlotIndex))
-		return;
-
-	UItemSlotWidgetBase* SlotWidget = ItemSlotWidgetList[SlotIndex];
-	if (!SlotWidget)
-		return;
-
-	FItemInfo ItemInfo = GetItemInfo(CurrentTabIndex, SlotIndex);
-	SlotWidget->UpdateSlot(ItemInfo);
-}
-
-void UInventoryWidgetBase::UpdateWidgetItemSlotAll()
-{
-	for (int SlotIndex = 0; SlotIndex < InventorySlotCount; ++SlotIndex)
-	{
-		UpdateWidgetItemSlot(SlotIndex);
-	}
-}
-
-void UInventoryWidgetBase::UpdateWidgetCash()
-{
-	if (!CashText)
-		return;
-
-	ASYPlayerController* SYController = Cast<ASYPlayerController>(GetOwningPlayer());
-	if (!SYController)
-		return;
-
-	ASYCharacter* Character = Cast<ASYCharacter>(SYController->GetCharacter());
-	if (!Character)
-		return;
-
-	int Cash = Character->GetCash();
-	CashText->SetText(FText::AsNumber(Cash));
-}
-
-void UInventoryWidgetBase::InitContainer()
-{
-	ItemInfoMap.Empty();
-	ItemPositionListMap.Empty();
-	ItemInfoListMap.Empty();
-	EmptySlotMap.Empty();
-
-	// init ItemInfoListMap
-	for (int TabIndex = 0; TabIndex < Tab_End; ++TabIndex)
-	{
-		ItemInfoListMap.Add(TabIndex, TArray<FItemInfo>());
-		ItemInfoListMap[TabIndex].Reserve(InventorySlotCount);
-		for (int invenSlotIndex = 0; invenSlotIndex < InventorySlotCount; ++invenSlotIndex)
-		{
-			ItemInfoListMap[TabIndex].Add(FItemInfo());
-		}
-	}
-
-	// init EmptySlotMap
-	for (int TabIndex = 0; TabIndex < Tab_End; ++TabIndex)
-	{
-		EmptySlotMap.Add(TabIndex, TArray<int>());
-		EmptySlotMap[TabIndex].Reserve(InventorySlotCount);
-		for (int invenSlotIndex = 0; invenSlotIndex < InventorySlotCount; ++invenSlotIndex)
-		{
-			EmptySlotMap[TabIndex].Add(invenSlotIndex);
+			TrySubtractItem(CurrentTabIndex, ButtonDownOp->SlotIndex, 1);
 		}
 	}
 }
@@ -319,96 +265,38 @@ void UInventoryWidgetBase::BindWidget()
 	// binding cash
 	CashText = Cast<UTextBlock>(GetWidgetFromName(TEXT("CashText")));
 	AddCashButton = Cast<UButton>(GetWidgetFromName(TEXT("AddCashButton")));
-	if(AddCashButton)
+	if (AddCashButton)
 		AddCashButton->OnClicked.AddDynamic(this, &UInventoryWidgetBase::OnClickAddCash);
 
 }
 
-FItemInfo UInventoryWidgetBase::GetItemInfo(int tabIndex, int slotIndex)
+void UInventoryWidgetBase::UpdateWidgetItemSlot(int SlotIndex)
 {
-	TArray<FItemInfo>* itemInfoList = ItemInfoListMap.Find(tabIndex);
-	if (itemInfoList && itemInfoList->IsValidIndex(slotIndex))
-	{
-		return (*itemInfoList)[slotIndex];
-	}
+	if (!ItemSlotWidgetList.IsValidIndex(SlotIndex))
+		return;
 
-	return FItemInfo();
+	UItemSlotWidgetBase* SlotWidget = ItemSlotWidgetList[SlotIndex];
+	if (!SlotWidget)
+		return;
+
+	const FItemInfo* ItemInfo = TryGetItemInfo(CurrentTabIndex, SlotIndex);
+	if (ItemInfo)
+	{
+		SlotWidget->UpdateSlot(*ItemInfo);
+	}
 }
 
-void UInventoryWidgetBase::SetItemInfo(int TabIndex, int SlotIndex, FItemInfo InItemInfo) // update item data
+void UInventoryWidgetBase::UpdateWidgetItemSlotAll()
 {
-	if(SlotIndex == INDEX_NONE)
-		return;
-
-	TArray<FItemInfo>* ItemInfoList = ItemInfoListMap.Find(TabIndex);
-	if (!ItemInfoList || !ItemInfoList->IsValidIndex(SlotIndex))
-		return;
-	
-	FItemInfo PrevItemInfo = (*ItemInfoList)[SlotIndex];
-	
-	// update item info
-	(*ItemInfoList)[SlotIndex] = InItemInfo;
-	
-	bool IsAddedItem = PrevItemInfo.ItemKey.ID == INVALID_CLASSID && InItemInfo.ItemKey.ID != INVALID_CLASSID;
-	bool IsRemoveItem = PrevItemInfo.ItemKey.ID != INVALID_CLASSID && InItemInfo.ItemKey.ID == INVALID_CLASSID;
-	if (IsAddedItem)
+	for (int SlotIndex = 0; SlotIndex < InventorySlotCount; ++SlotIndex)
 	{
-		// add item position
-		TArray<int>& ItemPositionList = ItemPositionListMap.FindOrAdd(InItemInfo.ItemKey);
-		ItemPositionList.AddUnique(SlotIndex);
-
-		// pop empty slot
-		ArrayHeap* EmptySlotIndexHeap = EmptySlotMap.Find(TabIndex);
-		if (EmptySlotIndexHeap)
-		{
-			EmptySlotIndexHeap->Remove(SlotIndex);
-			EmptySlotIndexHeap->Heapify();
-		}
-
-		// add item info
-		FItemInfo* ItemInfo = ItemInfoMap.Find(InItemInfo.ItemKey);
-		if (ItemInfo)
-		{
-			ItemInfo->Count += InItemInfo.Count;
-		}
-		else
-		{
-			ItemInfoMap.Add(InItemInfo.ItemKey, InItemInfo);
-		}
-	}
-	else if (IsRemoveItem)
-	{
-		// remove item position
-		TArray<int>* ItemPositionList = ItemPositionListMap.Find(PrevItemInfo.ItemKey);
-		if (ItemPositionList)
-		{
-			ItemPositionList->Remove(SlotIndex);
-		}
-
-		// push empty slot
-		ArrayHeap* EmptySlotIndexHeap = EmptySlotMap.Find(TabIndex);
-		if (EmptySlotIndexHeap)
-		{
-			EmptySlotIndexHeap->AddUnique(SlotIndex);
-			EmptySlotIndexHeap->Heapify();
-		}
-
-		// subtract or remove ItemInfo
-		FItemInfo* ItemInfo = ItemInfoMap.Find(PrevItemInfo.ItemKey);
-		if (ItemInfo)
-		{
-			ItemInfo->Count -= InItemInfo.Count;
-			if (ItemInfo->Count <= 0)
-			{
-				ItemInfoMap.Remove(InItemInfo.ItemKey);
-			}
-		}
+		UpdateWidgetItemSlot(SlotIndex);
 	}
 }
 
 void UInventoryWidgetBase::UpdateWidgetItemCount(int TabIndex, int SlotIndex, int ItemCount) // update item count
 {
-	TArray<FItemInfo>* ItemInfoList = ItemInfoListMap.Find(TabIndex);
+	TArray<FInventoryItemInfo>* ItemInfoList = ItemInfoListMap.Find(TabIndex);
 	if (ItemInfoList && ItemInfoList->IsValidIndex(SlotIndex))
 	{
 		(*ItemInfoList)[SlotIndex].Count = ItemCount;
@@ -427,13 +315,60 @@ void UInventoryWidgetBase::UpdateWidgetTabColor(int PrevTabIndex)
 		}
 	}
 
-	if (CurrentTabIndex >= 0 && CurrentTabIndex< Tab_End)
+	if (CurrentTabIndex >= 0 && CurrentTabIndex < Tab_End)
 	{
 		FLinearColor SelectedTabColor(1.f, 0.6f, 0.f, 1.f);
 		if (TabButton[CurrentTabIndex])
 		{
 			TabButton[CurrentTabIndex]->SetColorAndOpacity(SelectedTabColor);
 			TabButton[CurrentTabIndex]->SetBackgroundColor(SelectedTabColor);
+		}
+	}
+}
+
+void UInventoryWidgetBase::UpdateWidgetCash()
+{
+	if (!CashText)
+		return;
+
+	ASYPlayerController* SYController = Cast<ASYPlayerController>(GetOwningPlayer());
+	if (!SYController)
+		return;
+
+	ASYCharacter* Character = Cast<ASYCharacter>(SYController->GetCharacter());
+	if (!Character)
+		return;
+
+	int Cash = Character->GetCash();
+	CashText->SetText(FText::AsNumber(Cash));
+}
+
+void UInventoryWidgetBase::InitContainer()
+{
+	ItemInfoListMap.Empty();
+	EmptySlotMap.Empty();
+
+	// init ItemInfoListMap
+	for (int TabIndex = 0; TabIndex < Tab_End; ++TabIndex)
+	{
+		ItemInfoListMap.Add(TabIndex, TArray<FInventoryItemInfo>());
+		ItemInfoListMap[TabIndex].Reserve(InventorySlotCount);
+		for (int InvenSlotIndex = 0; InvenSlotIndex < InventorySlotCount; ++InvenSlotIndex)
+		{
+			FInventoryItemInfo InvenItemInfo;
+			InvenItemInfo.SlotIndex = InvenSlotIndex;
+			ItemInfoListMap[TabIndex].Add(InvenItemInfo);
+		}
+	}
+
+	// init EmptySlotMap
+	for (int TabIndex = 0; TabIndex < Tab_End; ++TabIndex)
+	{
+		EmptySlotMap.Add(TabIndex, TArray<int>());
+		EmptySlotMap[TabIndex].Reserve(InventorySlotCount);
+		for (int invenSlotIndex = 0; invenSlotIndex < InventorySlotCount; ++invenSlotIndex)
+		{
+			EmptySlotMap[TabIndex].Add(invenSlotIndex);
 		}
 	}
 }
@@ -462,6 +397,149 @@ int UInventoryWidgetBase::GetEmptySlotCount(int TabIndex)
 	return EmptySlotCount;
 }
 
+int UInventoryWidgetBase::GetItemCount(FItemKey ItemKey)
+{
+	int OutItemCount = 0;
+	TArray<const FInventoryItemInfo*> ItemInfoList = GetItemInfoList(ItemKey);
+	for (const FInventoryItemInfo* ItemInfo : ItemInfoList)
+	{
+		OutItemCount += ItemInfo->Count;
+	}
+	return OutItemCount;
+}
+
+void UInventoryWidgetBase::UpdateItemCount(int TabIndex, int SlotIndex, int ItemCount)
+{
+	TArray<FInventoryItemInfo>* ItemInfoList = ItemInfoListMap.Find(TabIndex);
+	if (ItemInfoList && ItemInfoList->IsValidIndex(SlotIndex))
+	{
+		(*ItemInfoList)[SlotIndex].Count = ItemCount;
+	}
+
+	if (CurrentTabIndex == TabIndex)
+	{
+		UpdateWidgetItemSlot(SlotIndex);
+	}
+}
+
+auto UInventoryWidgetBase::GetItemInfoList(FItemKey ItemKey) -> TArray<const FInventoryItemInfo*>
+{
+	TArray<const FInventoryItemInfo*> OutItemInfoList;
+
+	int TabIndex = ConvertItemTypeToTabIndex(ItemKey.Type);
+	TArray<FInventoryItemInfo>* ItemInfoList = ItemInfoListMap.Find(TabIndex);
+	if (ItemInfoList)
+	{
+
+		for (const FInventoryItemInfo& ItemInfo : *ItemInfoList)
+		{
+			if (ItemInfo.ItemKey.ID == ItemKey.ID)
+				OutItemInfoList.Add(&ItemInfo);
+		}
+	}
+
+	return OutItemInfoList;
+}
+
+void UInventoryWidgetBase::SetItemInfo(int TabIndex, const FInventoryItemInfo& NewItemInfo)
+{
+	TArray<FInventoryItemInfo>* ItemInfoList = ItemInfoListMap.Find(TabIndex);
+	if (ItemInfoList && ItemInfoList->IsValidIndex(NewItemInfo.SlotIndex))
+	{
+		(*ItemInfoList)[NewItemInfo.SlotIndex] = NewItemInfo;
+	}
+}
+
+void UInventoryWidgetBase::UpdateItemInfo(const FInventoryItemInfo & InItemInfo)
+{
+	int TabIndex = ConvertItemTypeToTabIndex(InItemInfo.ItemKey.Type);
+	const FInventoryItemInfo* PrevItemInfo = TryGetItemInfo(TabIndex, InItemInfo.SlotIndex);
+	if (!PrevItemInfo)
+		return;
+
+	bool IsAddedItem = PrevItemInfo->ItemKey.ID == INVALID_CLASSID && InItemInfo.ItemKey.ID != INVALID_CLASSID;
+	bool IsChangedItem = PrevItemInfo->ItemKey.ID != INVALID_CLASSID && InItemInfo.ItemKey.ID != INVALID_CLASSID;
+
+	// update item info
+	SetItemInfo(TabIndex, InItemInfo);
+
+	//update container
+	if (IsAddedItem)
+	{
+		// pop empty slot
+		ArrayHeap* EmptySlotIndexHeap = EmptySlotMap.Find(TabIndex);
+		if (EmptySlotIndexHeap)
+		{
+			EmptySlotIndexHeap->Remove(InItemInfo.SlotIndex);
+			EmptySlotIndexHeap->Heapify();
+		}
+	}
+}
+
+void UInventoryWidgetBase::RemoveItemInfo(int TabIndex, int SlotIndex)
+{
+	// remove item info
+	FInventoryItemInfo NewItemInfo = FInventoryItemInfo::Create(FItemInfo(), SlotIndex);
+	SetItemInfo(TabIndex, NewItemInfo);
+
+	// push empty slot
+	ArrayHeap* EmptySlotIndexHeap = EmptySlotMap.Find(TabIndex);
+	if (EmptySlotIndexHeap)
+	{
+		EmptySlotIndexHeap->AddUnique(SlotIndex);
+		EmptySlotIndexHeap->Heapify();
+	}
+}
+
+bool UInventoryWidgetBase::CanAddItem(const FItemInfo& AddedItemInfo)
+{
+	int TabIndex = ConvertItemTypeToTabIndex(AddedItemInfo.ItemKey.Type);
+	int EmptySlotCount = GetEmptySlotCount(TabIndex);
+	
+	if (EmptySlotCount > 0)
+		return true;
+
+	if (AddedItemInfo.IsStackable())
+	{
+		int AddableItemCount = 0;
+		TArray<const FInventoryItemInfo*> ItemInfoList = GetItemInfoList(AddedItemInfo.ItemKey);
+		for (int i = 0; i < ItemInfoList.Num(); ++i)
+		{
+			AddableItemCount += ItemInfoList[i]->MaxStackCount - ItemInfoList[i]->Count;
+			if (AddableItemCount >= AddedItemInfo.Count)
+				return true;
+		}
+	}
+	return false;
+}
+
+void UInventoryWidgetBase::AddItem(const FItemInfo& AddedItemInfo, int SlotIndex)
+{
+	int TabIndex = ConvertItemTypeToTabIndex(AddedItemInfo.ItemKey.Type);
+
+	FInventoryItemInfo InvenItemInfo = FInventoryItemInfo::Create(AddedItemInfo, SlotIndex);
+	UpdateItemInfo(InvenItemInfo);
+
+	if (CurrentTabIndex == TabIndex)
+	{
+		UpdateWidgetItemSlot(SlotIndex);
+	}
+}
+
+void UInventoryWidgetBase::SwapItem(int SrcSlotIndex, int DstSlotIndex)
+{
+	FInventoryItemInfo SrcItemInfo = GetItemInfo(CurrentTabIndex, SrcSlotIndex);
+	SrcItemInfo.SlotIndex = DstSlotIndex;
+
+	FInventoryItemInfo DstItemInfo = GetItemInfo(CurrentTabIndex, DstSlotIndex);
+	DstItemInfo.SlotIndex = SrcSlotIndex;
+
+	UpdateItemInfo(DstItemInfo);
+	UpdateWidgetItemSlot(DstItemInfo.SlotIndex);
+
+	UpdateItemInfo(SrcItemInfo);
+	UpdateWidgetItemSlot(SrcItemInfo.SlotIndex);
+}
 
 int UInventoryWidgetBase::ConvertItemTypeToTabIndex(EItemType ItemType)
 {
@@ -479,65 +557,6 @@ int UInventoryWidgetBase::ConvertItemTypeToTabIndex(EItemType ItemType)
 	}
 
 	return Tab_End;
-}
-
-void UInventoryWidgetBase::OnDragDrop(UDragDropOperation* InDragDropOp)
-{
-	if (InDragDropOp->IsA(UDragDropSlot::StaticClass()))
-	{
-		UDragDropSlot* DragDrop = Cast<UDragDropSlot>(InDragDropOp);
-		if (DragDrop->ToUINumber == EUINumber::Inventory)
-		{
-			if (DragDrop->FromSlotIndex == DragDrop->ToSlotIndex)
-			{
-				return;
-			}
-			
-			FItemInfo SrcItemInfo = GetItemInfo(CurrentTabIndex, DragDrop->FromSlotIndex);
-			FItemInfo DstItemInfo = GetItemInfo(CurrentTabIndex, DragDrop->ToSlotIndex);
-			bool IsEmptySrcSlot = SrcItemInfo.ItemKey.ID == 0;
-			bool IsEmptyDstSlot = DstItemInfo.ItemKey.ID == 0;
-			if (!IsEmptySrcSlot)
-			{
-				if (IsEmptyDstSlot)
-				{
-					RemoveItem(CurrentTabIndex, DragDrop->FromSlotIndex);
-					AddItem(SrcItemInfo, DragDrop->ToSlotIndex);
-				}
-				else // !IsEmptyDstSlot
-				{
-					SwapItem(DragDrop->FromSlotIndex, DragDrop->ToSlotIndex);
-				}
-			}
-		}
-	}
-}
-
-void UInventoryWidgetBase::OnButtonDown(class UButtonDownOperation* InButtonDownOp)
-{
-	if (InButtonDownOp->IsA(UButtonDownSlot::StaticClass()))
-	{
-		UButtonDownSlot* ButtonDownOp = Cast<UButtonDownSlot>(InButtonDownOp);
-		if (ButtonDownOp->PressedKey == EKeys::RightMouseButton)
-		{
-			TrySubtractItem(CurrentTabIndex, ButtonDownOp->SlotIndex, 1);
-		}
-	}
-}
-
-void UInventoryWidgetBase::SwapItem(int LeftSlotIndex, int RightSlotIndex)
-{
-	FItemInfo LeftItemInfo  = GetItemInfo(CurrentTabIndex, LeftSlotIndex);
-	FItemInfo RightItemInfo = GetItemInfo(CurrentTabIndex, RightSlotIndex);
-	
-	SetItemInfo(CurrentTabIndex, LeftSlotIndex, FItemInfo());
-	SetItemInfo(CurrentTabIndex, RightSlotIndex, FItemInfo());
-
-	SetItemInfo(CurrentTabIndex, LeftSlotIndex, RightItemInfo);
-	SetItemInfo(CurrentTabIndex, RightSlotIndex, LeftItemInfo);
-
-	UpdateWidgetItemSlot(LeftSlotIndex);
-	UpdateWidgetItemSlot(RightSlotIndex);
 }
 
 void UInventoryWidgetBase::OnClickEquipmentTab()
@@ -565,6 +584,6 @@ void UInventoryWidgetBase::OnClickAddCash()
 	if(!Character)
 		return;
 
-	Character->AddCash(500);
+	Character->AddCash(2000);
 	UpdateWidgetCash();
 }

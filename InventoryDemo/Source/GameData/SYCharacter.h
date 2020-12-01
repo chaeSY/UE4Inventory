@@ -25,11 +25,10 @@ public:
 	int	 GetCash();
 	void AddCash(int InAddedCash);
 
-	bool TryBuyItem(FItemInfo InItemInfo);
+	bool TryBuyItem(const FItemInfo& InItemInfo);
 	bool TrySellItem();
 
 private:
-	//key event
 	void OnKeyPress_Shop();
 	void OnKeyPress_Inventory();
 
