@@ -31,7 +31,7 @@ public:
 	EItemType ItemType = EItemType::None;
 	
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
-	TSoftObjectPtr<class UTexture2D> ItemIcon;
+	TSoftObjectPtr<class UTexture2D> IconTexture;
 
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
 	int MaxStackCount = 1;

@@ -27,11 +27,7 @@ void UItemSlotWidgetBase::NativeConstruct()
 
 void UItemSlotWidgetBase::BindWidget()
 {
-	ItemSlotTexture = LoadObject<UTexture2D>(NULL, TEXT("/Game/Texture/SlotButtonImage.SlotButtonImage"), NULL, LOAD_None, NULL);
-	ItemSlotTexture_MouseOver = LoadObject<UTexture2D>(NULL, TEXT("/Game/Texture/SlotButtonImage2.SlotButtonImage2"), NULL, LOAD_None, NULL);
-	EmptySlotTexture = LoadObject<UTexture2D>(NULL, TEXT("/Game/UITexture/T_UI_Empty.T_UI_Empty"), NULL, LOAD_None, NULL);
-
-	ItemSlotIcon = Cast<UImage>(GetWidgetFromName(TEXT("ItemIcon")));
+	ItemIconImage = Cast<UImage>(GetWidgetFromName(TEXT("ItemIcon")));
 	ItemCountText = Cast<UTextBlock>(GetWidgetFromName(TEXT("ItemCount")));
 	ItemSlotBorder = Cast<UBorder>(GetWidgetFromName(TEXT("ItemSlotBorder")));
 }
@@ -57,31 +53,15 @@ void UItemSlotWidgetBase::UpdateSlot(const FItemInfo& InItemInfo)
 		return;
 
 	// update item icon
-	if (ItemSlotIcon)
+	if (ItemIconImage)
 	{
 		if (InItemInfo.ItemKey.ID == 0)
 		{
-			ItemSlotIcon->SetBrushFromSoftTexture(EmptySlotTexture);
+			ItemIconImage->SetBrushFromSoftTexture(EmptyItemIconTexture);
 		}
-		else if (InItemInfo.ItemKey.Type == EItemType::Equipment)
+		else //
 		{
-			FSYTableEquipmentItem* TableRow = GameDataManager->GetGameData<FSYTableEquipmentItem>(ETableType::EquipmentItem, InItemInfo.ItemKey.ID);
-			if (TableRow)
-				ItemSlotIcon->SetBrushFromSoftTexture(TableRow->ItemIcon);
-
-		}
-		else if (InItemInfo.ItemKey.Type == EItemType::Consumable)
-		{
-			FSYTableConsumeItem* TableRow = GameDataManager->GetGameData<FSYTableConsumeItem>(ETableType::ConsumableItem, InItemInfo.ItemKey.ID);
-			if (TableRow)
-				ItemSlotIcon->SetBrushFromSoftTexture(TableRow->ItemIcon);
-
-		}
-		else if (InItemInfo.ItemKey.Type == EItemType::Etc)
-		{
-			FSYTableEtcItem* TableRow = GameDataManager->GetGameData<FSYTableEtcItem>(ETableType::EtcItem, InItemInfo.ItemKey.ID);
-			if (TableRow)
-				ItemSlotIcon->SetBrushFromSoftTexture(TableRow->ItemIcon);
+			ItemIconImage->SetBrushFromSoftTexture(InItemInfo.IconTexture);
 		}
 	}
 
@@ -150,7 +130,7 @@ void UItemSlotWidgetBase::NativeOnMouseEnter(const FGeometry& InGeometry, const 
 	Super::NativeOnMouseEnter(InGeometry, InMouseEvent);
 	if (ItemSlotBorder)
 	{
-		ItemSlotBorder->SetBrushFromTexture(ItemSlotTexture_MouseOver);
+		ItemSlotBorder->SetBrushFromTexture(BackgroundTextureMouseOver);
 	}
 
 	OnHovered.Broadcast(SlotIndex);
@@ -161,7 +141,7 @@ void UItemSlotWidgetBase::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 	Super::NativeOnMouseLeave(InMouseEvent);
 	if (ItemSlotBorder)
 	{
-		ItemSlotBorder->SetBrushFromTexture(ItemSlotTexture);
+		ItemSlotBorder->SetBrushFromTexture(BackgroundTexture);
 	}
 }
 

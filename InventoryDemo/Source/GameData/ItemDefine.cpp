@@ -45,6 +45,7 @@ FItemInfo FItemInfo::CreateItemInfo(const UObject* WorldContextObject, EItemType
 		ItemInfo.Count = 1;
 		ItemInfo.MaxStackCount = TableRow->MaxStackCount;
 		ItemInfo.Price = TableRow->Price;
+		ItemInfo.IconTexture = TableRow->IconTexture;
 	}
 
 	return ItemInfo;

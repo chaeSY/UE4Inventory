@@ -41,7 +41,7 @@ private:
 	int			SlotIndex;
 
 	UPROPERTY()
-	class UImage* ItemSlotIcon;
+	class UImage* ItemIconImage;
 
 	UPROPERTY()
 	class UTextBlock* ItemCountText;
@@ -49,12 +49,12 @@ private:
 	UPROPERTY()
 	class UBorder* ItemSlotBorder;
 
-	UPROPERTY()
-	class UTexture2D* ItemSlotTexture;
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class UTexture2D* BackgroundTexture;
 
-	UPROPERTY()
-	class UTexture2D* ItemSlotTexture_MouseOver;
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class UTexture2D* BackgroundTextureMouseOver;
 
-	UPROPERTY()
-	class UTexture2D* EmptySlotTexture;
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	class UTexture2D* EmptyItemIconTexture;
 };

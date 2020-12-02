@@ -294,15 +294,6 @@ void UInventoryWidgetBase::UpdateWidgetItemSlotAll()
 	}
 }
 
-void UInventoryWidgetBase::UpdateWidgetItemCount(int TabIndex, int SlotIndex, int ItemCount) // update item count
-{
-	TArray<FInventoryItemInfo>* ItemInfoList = ItemInfoListMap.Find(TabIndex);
-	if (ItemInfoList && ItemInfoList->IsValidIndex(SlotIndex))
-	{
-		(*ItemInfoList)[SlotIndex].Count = ItemCount;
-	}
-}
-
 void UInventoryWidgetBase::UpdateWidgetTabColor(int PrevTabIndex)
 {
 	if (PrevTabIndex >= 0 && PrevTabIndex < Tab_End)

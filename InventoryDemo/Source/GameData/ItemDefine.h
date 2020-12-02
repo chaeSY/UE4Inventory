@@ -65,7 +65,8 @@ struct FItemInfo
 	int	Count = 0;
 	int Price = 0;
 	int MaxStackCount = 0;
-	
+	TSoftObjectPtr<class UTexture2D> IconTexture;
+
 	static FItemInfo CreateItemInfo(const UObject* WorldContextObject, EItemType ItemType, int ItemID);
 	bool   IsStackable() const;
 };

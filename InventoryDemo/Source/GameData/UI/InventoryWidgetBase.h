@@ -46,7 +46,6 @@ private:
 	void BindWidget();
 	void UpdateWidgetItemSlot(int SlotIndex);
 	void UpdateWidgetItemSlotAll();
-	void UpdateWidgetItemCount(int TabIndex, int SlotIndex, int ItemCount);
 	void UpdateWidgetTabColor(int PrevTabIndex);
 	void UpdateWidgetCash();
 
