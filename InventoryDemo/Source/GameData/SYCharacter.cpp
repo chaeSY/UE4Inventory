@@ -72,7 +72,7 @@ void ASYCharacter::AddCash(int InAddedCash)
 	Cash += InAddedCash;
 }
 
-bool ASYCharacter::TryBuyItem(const FItemInfo& InItemInfo)
+bool ASYCharacter::TryBuyItem(const FItemInfo& BuyItemInfo)
 {
 	ASYPlayerController* SYController = Cast<ASYPlayerController>(GetController());
 	if (!SYController || !SYController->WidgetManager)
@@ -82,17 +82,37 @@ bool ASYCharacter::TryBuyItem(const FItemInfo& InItemInfo)
 	if(!InventoryWidget)
 		return false;
 
-	if (Cash < InItemInfo.Price)
+	if (Cash < BuyItemInfo.Price)
 		return false;
 
-	if (InventoryWidget->TryAddItem(InItemInfo))
+	if (InventoryWidget->TryAddItem(BuyItemInfo))
 	{
-		Cash -= InItemInfo.Price;
+		Cash -= BuyItemInfo.Price * BuyItemInfo.Count;
 		InventoryWidget->OnBuyItem();
 		return true;
 	}
-	else
-	{
+
+	return false;
+}
+
+bool ASYCharacter::TrySellItem(const FItemInfo& SellItemInfo)
+{
+	ASYPlayerController* SYController = Cast<ASYPlayerController>(GetController());
+	if (!SYController || !SYController->WidgetManager)
 		return false;
+
+	UInventoryWidgetBase* InventoryWidget = SYController->WidgetManager->GetWidget<UInventoryWidgetBase>(EUINumber::Inventory);
+	if (!InventoryWidget)
+		return false;
+
+	int SellItemPrice = SellItemInfo.Price;
+	int SellItemCount = SellItemInfo.Count;
+	if (InventoryWidget->TrySubtractItemInSlotOrder(SellItemInfo, SellItemInfo.Count))
+	{
+		Cash += SellItemPrice * SellItemCount;
+		InventoryWidget->OnBuyItem();
+		return true;
 	}
+
+	return false;
 }

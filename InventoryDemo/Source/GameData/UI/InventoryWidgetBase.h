@@ -31,8 +31,8 @@ public:
 	auto GetItemInfo(int tabIndex, int slotIndex)	 -> FInventoryItemInfo;
 
 	bool TryAddItem(const FItemInfo& AddedItemInfo);
-	bool TrySubtractItem(const FItemInfo& SubtractItemInfo, int SubtractCount);
 	bool TrySubtractItem(int TabIndex, int SlotIndex, int SubtractCount);
+	bool TrySubtractItemInSlotOrder(const FItemInfo& SubtractItemInfo, int SubtractCount);
 	void RemoveItem(int TabIndex, int SlotIndex);
 
 	void OnBuyItem();

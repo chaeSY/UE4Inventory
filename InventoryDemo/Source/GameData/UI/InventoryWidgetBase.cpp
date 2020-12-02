@@ -92,7 +92,29 @@ bool UInventoryWidgetBase::TryAddItem(const FItemInfo& AddedItemInfo)
 	return true;
 }
 
-bool UInventoryWidgetBase::TrySubtractItem(const FItemInfo& SubtractItemInfo, int SubtractCount)
+bool UInventoryWidgetBase::TrySubtractItem(int TabIndex, int SlotIndex, int SubtractCount)
+{
+	const FItemInfo* ItemInfo = TryGetItemInfo(TabIndex, SlotIndex);
+	if (!ItemInfo)
+		return false;
+
+	if (ItemInfo->Count < SubtractCount)
+		return false;
+
+	if (SubtractCount == ItemInfo->Count)
+	{
+		RemoveItem(TabIndex, SlotIndex);
+	}
+	else
+	{
+		int RemainItemCount = ItemInfo->Count - SubtractCount;
+		UpdateItemCount(TabIndex, SlotIndex, RemainItemCount);
+	}
+
+	return true;
+}
+
+bool UInventoryWidgetBase::TrySubtractItemInSlotOrder(const FItemInfo& SubtractItemInfo, int SubtractCount)
 {
 	int ItemCount = GetItemCount(SubtractItemInfo.ItemKey);
 	if (ItemCount < SubtractCount)
@@ -119,28 +141,6 @@ bool UInventoryWidgetBase::TrySubtractItem(const FItemInfo& SubtractItemInfo, in
 			UpdateItemCount(TabIndex, ItemInfo.SlotIndex, RemainCount);
 			break;
 		}
-	}
-
-	return true;
-}
-
-bool UInventoryWidgetBase::TrySubtractItem(int TabIndex, int SlotIndex, int SubtractCount)
-{
-	const FItemInfo* ItemInfo = TryGetItemInfo(TabIndex, SlotIndex);
-	if (!ItemInfo)
-		return false;
-
-	if (ItemInfo->Count < SubtractCount)
-		return false;
-
-	if (SubtractCount == ItemInfo->Count)
-	{
-		RemoveItem(TabIndex, SlotIndex);
-	}
-	else
-	{
-		int RemainItemCount = ItemInfo->Count - SubtractCount;
-		UpdateItemCount(TabIndex, SlotIndex, RemainItemCount);
 	}
 
 	return true;
@@ -225,7 +225,31 @@ void UInventoryWidgetBase::OnButtonDown(class UButtonDownOperation* InButtonDown
 		UButtonDownSlot* ButtonDownOp = Cast<UButtonDownSlot>(InButtonDownOp);
 		if (ButtonDownOp->PressedKey == EKeys::RightMouseButton)
 		{
-			TrySubtractItem(CurrentTabIndex, ButtonDownOp->SlotIndex, 1);
+			ASYPlayerController* PC = Cast<ASYPlayerController>(GetOwningPlayer());
+			if (PC && PC->WidgetManager)
+			{
+				USYWidgetBase* Widget = PC->WidgetManager->GetWidget(EUINumber::Store);
+				if (Widget)
+				{
+					if (Widget->IsVisible())
+					{
+						ASYCharacter* Character = Cast<ASYCharacter>(PC->GetCharacter());
+						if (Character)
+						{
+							const FItemInfo* ItemInfo = TryGetItemInfo(CurrentTabIndex, ButtonDownOp->SlotIndex);
+							if (ItemInfo)
+							{
+								Character->TrySellItem(*ItemInfo);
+							}
+						}
+					}
+					else
+					{
+						TrySubtractItem(CurrentTabIndex, ButtonDownOp->SlotIndex, 1);
+					}
+				}
+			}
+
 		}
 	}
 }
