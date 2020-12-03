@@ -5,12 +5,14 @@
 #include "ItemSlotWidgetBase.h"
 #include "Operation/DragDropSlot.h"
 #include "Operation/ButtonDownSlot.h"
+#include "StoreWidgetBase.h"
 #include "../GameData/SYGameDataManager.h"
 #include "../GameData/SYDataTable.h"
 #include "../SYPlayerController.h"
 #include "../SYGameModeBase.h"
 #include "../SYCharacter.h"
 #include "../SYGameInstance.h"
+#include "../SYUtil.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 #include "Components/Border.h"
@@ -225,31 +227,24 @@ void UInventoryWidgetBase::OnButtonDown(class UButtonDownOperation* InButtonDown
 		UButtonDownSlot* ButtonDownOp = Cast<UButtonDownSlot>(InButtonDownOp);
 		if (ButtonDownOp->PressedKey == EKeys::RightMouseButton)
 		{
-			ASYPlayerController* PC = Cast<ASYPlayerController>(GetOwningPlayer());
-			if (PC && PC->WidgetManager)
+			UStoreWidgetBase* StoreWidget = SYUtil::GetWidget<UStoreWidgetBase>(GetWorld(), EUINumber::Store);
+			if (StoreWidget && StoreWidget->IsVisible())
 			{
-				USYWidgetBase* Widget = PC->WidgetManager->GetWidget(EUINumber::Store);
-				if (Widget)
+				ASYCharacter* Character = GetOwningPlayerPawn<ASYCharacter>();
+				if (Character)
 				{
-					if (Widget->IsVisible())
+					const FItemInfo* ItemInfo = TryGetItemInfo(CurrentTabIndex, ButtonDownOp->SlotIndex);
+					if (ItemInfo)
 					{
-						ASYCharacter* Character = Cast<ASYCharacter>(PC->GetCharacter());
-						if (Character)
-						{
-							const FItemInfo* ItemInfo = TryGetItemInfo(CurrentTabIndex, ButtonDownOp->SlotIndex);
-							if (ItemInfo)
-							{
-								Character->TrySellItem(*ItemInfo);
-							}
-						}
-					}
-					else
-					{
-						TrySubtractItem(CurrentTabIndex, ButtonDownOp->SlotIndex, 1);
+						Character->TrySellItem(*ItemInfo);
 					}
 				}
 			}
-
+			else
+			{
+				//test
+				TrySubtractItem(CurrentTabIndex, ButtonDownOp->SlotIndex, 1);
+			}
 		}
 	}
 }
@@ -343,19 +338,15 @@ void UInventoryWidgetBase::UpdateWidgetTabColor(int PrevTabIndex)
 
 void UInventoryWidgetBase::UpdateWidgetCash()
 {
-	if (!CashText)
-		return;
-
-	ASYPlayerController* SYController = Cast<ASYPlayerController>(GetOwningPlayer());
-	if (!SYController)
-		return;
-
-	ASYCharacter* Character = Cast<ASYCharacter>(SYController->GetCharacter());
-	if (!Character)
-		return;
-
-	int Cash = Character->GetCash();
-	CashText->SetText(FText::AsNumber(Cash));
+	if (CashText)
+	{
+		ASYCharacter* Character = GetOwningPlayerPawn<ASYCharacter>();
+		if (Character)
+		{
+			int Cash = Character->GetCash();
+			CashText->SetText(FText::AsNumber(Cash));
+		}
+	}
 }
 
 void UInventoryWidgetBase::InitContainer()
@@ -445,7 +436,6 @@ auto UInventoryWidgetBase::GetItemInfoList(FItemKey ItemKey) -> TArray<const FIn
 	TArray<FInventoryItemInfo>* ItemInfoList = ItemInfoListMap.Find(TabIndex);
 	if (ItemInfoList)
 	{
-
 		for (const FInventoryItemInfo& ItemInfo : *ItemInfoList)
 		{
 			if (ItemInfo.ItemKey.ID == ItemKey.ID)
@@ -472,16 +462,14 @@ void UInventoryWidgetBase::UpdateItemInfo(const FInventoryItemInfo & InItemInfo)
 	if (!PrevItemInfo)
 		return;
 
-	bool IsAddedItem = PrevItemInfo->ItemKey.ID == INVALID_CLASSID && InItemInfo.ItemKey.ID != INVALID_CLASSID;
-	bool IsChangedItem = PrevItemInfo->ItemKey.ID != INVALID_CLASSID && InItemInfo.ItemKey.ID != INVALID_CLASSID;
+	bool IsAddedItemToEmptySlot = PrevItemInfo->ItemKey.ID == INVALID_CLASSID && InItemInfo.ItemKey.ID != INVALID_CLASSID;
 
-	// update item info
+	// set item info
 	SetItemInfo(TabIndex, InItemInfo);
 
-	//update container
-	if (IsAddedItem)
+	// update empty slot (push)
+	if (IsAddedItemToEmptySlot)
 	{
-		// pop empty slot
 		ArrayHeap* EmptySlotIndexHeap = EmptySlotMap.Find(TabIndex);
 		if (EmptySlotIndexHeap)
 		{
@@ -497,7 +485,7 @@ void UInventoryWidgetBase::RemoveItemInfo(int TabIndex, int SlotIndex)
 	FInventoryItemInfo NewItemInfo = FInventoryItemInfo::Create(FItemInfo(), SlotIndex);
 	SetItemInfo(TabIndex, NewItemInfo);
 
-	// push empty slot
+	// update empty slot (pop)
 	ArrayHeap* EmptySlotIndexHeap = EmptySlotMap.Find(TabIndex);
 	if (EmptySlotIndexHeap)
 	{
@@ -591,11 +579,7 @@ void UInventoryWidgetBase::OnClickEtcTab()
 
 void UInventoryWidgetBase::OnClickAddCash()
 {
-	ASYPlayerController* SYController = Cast<ASYPlayerController>(GetOwningPlayer());
-	if (!SYController)
-		return;
-
-	ASYCharacter* Character = Cast<ASYCharacter>(SYController->GetCharacter());
+	ASYCharacter* Character = GetOwningPlayerPawn<ASYCharacter>();
 	if(!Character)
 		return;
 

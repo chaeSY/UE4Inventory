@@ -9,17 +9,22 @@
 /**
  * 
  */
+class UWidgetManager;
 UCLASS()
 class GAMEDATA_API ASYPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(BlueprintReadOnly, EditAnyWhere)
-	TSubclassOf<class UWidgetManager> WidgetManagerClass;
+	UWidgetManager* GetWidgetManager();
+
+private:
+	virtual void BeginPlay() override;
+
+private:
+	UPROPERTY(BlueprintReadOnly, EditAnyWhere, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UWidgetManager> WidgetManagerClass;
 
 	UPROPERTY()
-	class UWidgetManager* WidgetManager;
-
-	virtual void BeginPlay() override;
+	UWidgetManager* WidgetManager;
 };

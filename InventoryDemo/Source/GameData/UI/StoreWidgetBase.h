@@ -24,7 +24,7 @@ private:
 	virtual void OnButtonDown(class UButtonDownOperation* InButtonDownOp) final;
 	
 	bool TryBuyItem(int StoreSlotIndex);
-	void UpdateStoreItemInfo(int InStoreClassID);
+	void InitStoreItemInfo(int InStoreClassID);
 
 	void BindWidget();
 	void UpdateWidgetSlotAll();

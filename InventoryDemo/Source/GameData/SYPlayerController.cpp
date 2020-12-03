@@ -6,6 +6,12 @@
 #include "UI/InventoryWidgetBase.h"
 #include "UI/WidgetManager.h"
 
+
+UWidgetManager* ASYPlayerController::GetWidgetManager()
+{
+	return WidgetManager;
+}
+
 void ASYPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -13,7 +19,10 @@ void ASYPlayerController::BeginPlay()
 	if (WidgetManagerClass)
 	{
 		WidgetManager = CreateWidget<UWidgetManager>(this, WidgetManagerClass);
-		WidgetManager->AddToViewport();
+		if (WidgetManager)
+		{
+			WidgetManager->AddToViewport();
+		}
 	}
 	
 	bShowMouseCursor = true;

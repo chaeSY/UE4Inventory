@@ -29,16 +29,12 @@ public:
 	USYGameDataManager();
 	~USYGameDataManager();
 	
+	FSYTableBase* GetGameData(ETableType TableType, int RowID);
+
 	template<typename T>
 	T* GetGameData(ETableType TableType, int RowID)
 	{
-		UDataTable* DataTable = TableMap.FindRef(TableType);
-		if (DataTable)
-		{
-			T* GameData = DataTable->FindRow<T>(*FString::FromInt(RowID), TEXT("GetGameData"));
-			return GameData;
-		}
-		return nullptr;
+		return static_cast<T*>(GetGameData(TableType, RowID));
 	}
 
 private:

@@ -4,6 +4,7 @@
 #include "UI/WidgetManager.h"
 #include "UI/InventoryWidgetBase.h"
 #include "GameData/SYGameDataManager.h"
+#include "SYUtil.h"
 
 ASYCharacter::ASYCharacter()
 {
@@ -14,6 +15,8 @@ ASYCharacter::ASYCharacter()
 void ASYCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// test
 	AddCash(10000);
 }
 
@@ -32,32 +35,32 @@ void ASYCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void ASYCharacter::OnKeyPress_Shop()
 {
-	ASYPlayerController* SYController = Cast<ASYPlayerController>(GetController());
-	if (SYController && SYController->WidgetManager)
+	UWidgetManager* WidgetManager = SYUtil::GetWidgetManager(GetWorld());
+	if (WidgetManager)
 	{
-		if (!SYController->WidgetManager->IsVisible(EUINumber::Store))
+		if (!WidgetManager->IsVisible(EUINumber::Store))
 		{
-			SYController->WidgetManager->ShowUI(EUINumber::Store);
+			WidgetManager->ShowUI(EUINumber::Store);
 		}
 		else
 		{
-			SYController->WidgetManager->HideUI(EUINumber::Store);
+			WidgetManager->HideUI(EUINumber::Store);
 		}
 	}
 }
 
 void ASYCharacter::OnKeyPress_Inventory()
 {
-	ASYPlayerController* SYController = Cast<ASYPlayerController>(GetController());
-	if (SYController && SYController->WidgetManager)
+	UWidgetManager* WidgetManager = SYUtil::GetWidgetManager(GetWorld());
+	if (WidgetManager)
 	{
-		if (!SYController->WidgetManager->IsVisible(EUINumber::Inventory))
+		if (!WidgetManager->IsVisible(EUINumber::Inventory))
 		{
-			SYController->WidgetManager->ShowUI(EUINumber::Inventory);
+			WidgetManager->ShowUI(EUINumber::Inventory);
 		}
 		else
 		{
-			SYController->WidgetManager->HideUI(EUINumber::Inventory);
+			WidgetManager->HideUI(EUINumber::Inventory);
 		}
 	}
 }
@@ -74,20 +77,17 @@ void ASYCharacter::AddCash(int InAddedCash)
 
 bool ASYCharacter::TryBuyItem(const FItemInfo& BuyItemInfo)
 {
-	ASYPlayerController* SYController = Cast<ASYPlayerController>(GetController());
-	if (!SYController || !SYController->WidgetManager)
-		return false;
-
-	UInventoryWidgetBase* InventoryWidget = SYController->WidgetManager->GetWidget<UInventoryWidgetBase>(EUINumber::Inventory);
+	UInventoryWidgetBase* InventoryWidget = SYUtil::GetWidget<UInventoryWidgetBase>(GetWorld(), EUINumber::Inventory);
 	if(!InventoryWidget)
 		return false;
 
-	if (Cash < BuyItemInfo.Price)
+	int ResultPrice = BuyItemInfo.Price * BuyItemInfo.Count;
+	if (Cash < ResultPrice)
 		return false;
 
 	if (InventoryWidget->TryAddItem(BuyItemInfo))
 	{
-		Cash -= BuyItemInfo.Price * BuyItemInfo.Count;
+		Cash -= ResultPrice;
 		InventoryWidget->OnBuyItem();
 		return true;
 	}
@@ -97,19 +97,14 @@ bool ASYCharacter::TryBuyItem(const FItemInfo& BuyItemInfo)
 
 bool ASYCharacter::TrySellItem(const FItemInfo& SellItemInfo)
 {
-	ASYPlayerController* SYController = Cast<ASYPlayerController>(GetController());
-	if (!SYController || !SYController->WidgetManager)
-		return false;
-
-	UInventoryWidgetBase* InventoryWidget = SYController->WidgetManager->GetWidget<UInventoryWidgetBase>(EUINumber::Inventory);
+	UInventoryWidgetBase* InventoryWidget = SYUtil::GetWidget<UInventoryWidgetBase>(GetWorld(), EUINumber::Inventory);
 	if (!InventoryWidget)
 		return false;
 
-	int SellItemPrice = SellItemInfo.Price;
-	int SellItemCount = SellItemInfo.Count;
+	int ResultPrice = SellItemInfo.Price * SellItemInfo.Count;
 	if (InventoryWidget->TrySubtractItemInSlotOrder(SellItemInfo, SellItemInfo.Count))
 	{
-		Cash += SellItemPrice * SellItemCount;
+		Cash += ResultPrice;
 		InventoryWidget->OnBuyItem();
 		return true;
 	}

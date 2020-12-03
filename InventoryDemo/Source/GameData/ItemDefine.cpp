@@ -3,8 +3,8 @@
 
 #include "ItemDefine.h"
 #include "Kismet/GameplayStatics.h"
-#include "GameData/SYGameDataManager.h"
 #include "SYGameInstance.h"
+#include "SYUtil.h"
 
 ETableType ConvertItemTypeToTableType(EItemType ItemType)
 {
@@ -28,16 +28,8 @@ ETableType ConvertItemTypeToTableType(EItemType ItemType)
 FItemInfo FItemInfo::CreateItemInfo(const UObject* WorldContextObject, EItemType ItemType, int ItemID)
 {
 	FItemInfo ItemInfo;
-	USYGameInstance* GameInstance = Cast<USYGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
-	if (!GameInstance)
-		return ItemInfo;
-
-	USYGameDataManager* GameDataManager = GameInstance->GetGameDataManager();
-	if (!GameDataManager)
-		return ItemInfo;
-
 	ETableType TableType = ConvertItemTypeToTableType(ItemType);
-	FSYTableItemBase* TableRow = GameDataManager->GetGameData<FSYTableItemBase>(TableType, ItemID);
+	FSYTableItemBase* TableRow = SYUtil::GetGameData<FSYTableItemBase>(WorldContextObject, TableType, ItemID);
 	if (TableRow)
 	{
 		ItemInfo.ItemKey.Type = ItemType;

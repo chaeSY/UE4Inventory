@@ -19,6 +19,7 @@
 #include "../GameData/SYGameDataManager.h"
 #include "../GameData/SYDataTable.h"
 #include "Kismet/GameplayStatics.h"
+#include "../SYUtil.h"
 
 void UItemSlotWidgetBase::NativeConstruct()
 {
@@ -44,14 +45,6 @@ void UItemSlotWidgetBase::SetParentUINumber(EUINumber UINumber)
 
 void UItemSlotWidgetBase::UpdateSlot(const FItemInfo& InItemInfo)
 {
-	USYGameInstance* GameInstance = Cast<USYGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if (!GameInstance)
-		return;
-
-	USYGameDataManager* GameDataManager = GameInstance->GetGameDataManager();
-	if (!GameDataManager)
-		return;
-
 	// update item icon
 	if (ItemIconImage)
 	{
@@ -115,10 +108,10 @@ bool UItemSlotWidgetBase::NativeOnDrop(const FGeometry& InGeometry, const FDragD
 		DragDropOp->ToSlotIndex = SlotIndex;
 		DragDropOp->ToUINumber = ParentUINumber;
 
-		ASYPlayerController* PC = Cast<ASYPlayerController>(GetOwningPlayer());
-		if (PC && PC->WidgetManager)
+		UWidgetManager* WidgetManager = SYUtil::GetWidgetManager(GetWorld());
+		if (WidgetManager)
 		{
-			PC->WidgetManager->DragDrop(DragDropOp);
+			WidgetManager->DragDrop(DragDropOp);
 		}
 	}
 
@@ -161,27 +154,23 @@ bool UItemSlotWidgetBase::IsShowItemCount(const FItemInfo& InItemInfo)
 
 void UItemSlotWidgetBase::OnMouseButtonDown(const FPointerEvent& InMouseEvent)
 {
-	ASYPlayerController* PC = Cast<ASYPlayerController>(GetOwningPlayer());
-	if (PC && PC->WidgetManager)
+	USYWidgetBase* Widget = SYUtil::GetWidget(GetWorld(), ParentUINumber);
+	if (Widget)
 	{
-		USYWidgetBase* Widget = PC->WidgetManager->GetWidget(ParentUINumber);
-		if (Widget)
+		UButtonDownSlot* MouseButtonDownOp = NewObject<UButtonDownSlot>();
+		if (MouseButtonDownOp)
 		{
-			UButtonDownSlot* MouseButtonDownOp = NewObject<UButtonDownSlot>();
-			if (MouseButtonDownOp)
-			{
-				MouseButtonDownOp->SlotIndex = SlotIndex;
+			MouseButtonDownOp->SlotIndex = SlotIndex;
 
-				if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
-				{
-					MouseButtonDownOp->PressedKey = EKeys::LeftMouseButton;
-				}
-				else if (InMouseEvent.IsMouseButtonDown(EKeys::RightMouseButton))
-				{
-					MouseButtonDownOp->PressedKey = EKeys::RightMouseButton;
-				}
-				Widget->OnButtonDown(MouseButtonDownOp);
+			if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
+			{
+				MouseButtonDownOp->PressedKey = EKeys::LeftMouseButton;
 			}
+			else if (InMouseEvent.IsMouseButtonDown(EKeys::RightMouseButton))
+			{
+				MouseButtonDownOp->PressedKey = EKeys::RightMouseButton;
+			}
+			Widget->OnButtonDown(MouseButtonDownOp);
 		}
 	}
 }

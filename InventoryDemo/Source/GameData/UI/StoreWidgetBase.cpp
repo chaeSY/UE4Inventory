@@ -15,13 +15,14 @@
 #include "../GameData/SYGameDataManager.h"
 #include "../SYCharacter.h"
 #include "../SYPlayerController.h"
+#include "../SYUtil.h"
 
 void UStoreWidgetBase::NativeConstruct()
 {
 	SetVisibility(ESlateVisibility::Hidden);
 
 	BindWidget();
-	UpdateStoreItemInfo(1); // Test
+	InitStoreItemInfo(1); // Test
 	UpdateWidgetSlotAll();
 }
 
@@ -51,11 +52,7 @@ void UStoreWidgetBase::OnButtonDown(class UButtonDownOperation* InButtonDownOp)
 
 bool UStoreWidgetBase::TryBuyItem(int StoreSlotIndex)
 {
-	ASYPlayerController* SYController = Cast<ASYPlayerController>(GetOwningPlayer());
-	if (!SYController)
-		return false;
-
-	ASYCharacter* Character = Cast<ASYCharacter>(SYController->GetCharacter());
+	ASYCharacter* Character = GetOwningPlayerPawn<ASYCharacter>();
 	if (!Character)
 		return false;
 
@@ -66,19 +63,11 @@ bool UStoreWidgetBase::TryBuyItem(int StoreSlotIndex)
 	return Character->TryBuyItem(StoreItemInfo);
 }
 
-void UStoreWidgetBase::UpdateStoreItemInfo(int InStoreClassID)
+void UStoreWidgetBase::InitStoreItemInfo(int InStoreClassID)
 {
 	StoreItemInfoList.Empty();
 
-	USYGameInstance* GameInstance = Cast<USYGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if (!GameInstance)
-		return;
-
-	USYGameDataManager* GameDataManager = GameInstance->GetGameDataManager();
-	if (!GameDataManager)
-		return;
-
-	FSYTableStore* StoreTable = GameDataManager->GetGameData<FSYTableStore>(ETableType::Store, InStoreClassID);
+	FSYTableStore* StoreTable = SYUtil::GetGameData<FSYTableStore>(GetWorld(), ETableType::Store, InStoreClassID);
 	if (StoreTable)
 	{
 		for (int ItemIndex = 0; ItemIndex < StoreTable->StoreItemList.Num(); ++ItemIndex)
@@ -160,7 +149,7 @@ void UStoreWidgetBase::OnClickChangeStoreButton()
 		int StoreID = FCString::Atoi(*StoreIDText->GetText().ToString());
 		if (StoreID != 0)
 		{
-			UpdateStoreItemInfo(StoreID);
+			InitStoreItemInfo(StoreID);
 		}
 
 		UpdateWidgetSlotAll();
