@@ -7,6 +7,8 @@
 #include "ItemDefine.h"
 #include "SYCharacter.generated.h"
 
+struct FItemInfo;
+
 UCLASS()
 class GAMEDATA_API ASYCharacter : public ACharacter
 {
@@ -25,8 +27,8 @@ public:
 	int	 GetCash();
 	void AddCash(int InAddedCash);
 
-	bool TryBuyItem(const FItemInfo& BuyItemInfo);
-	bool TrySellItem(const FItemInfo& SellItemInfo);
+	bool TryBuyItem(FItemKey ItemKey, int ItemCount, int ItemPrice);
+	bool TrySellItem(int TabIndex, int ItemCount, int ItemPrice, int SlotIndex);
 
 private:
 	void OnKeyPress_Shop();

@@ -4,6 +4,7 @@
 #include "UI/WidgetManager.h"
 #include "UI/InventoryWidgetBase.h"
 #include "GameData/SYGameDataManager.h"
+#include "GameData/SYDataTable.h"
 #include "SYUtil.h"
 
 ASYCharacter::ASYCharacter()
@@ -75,17 +76,17 @@ void ASYCharacter::AddCash(int InAddedCash)
 	Cash += InAddedCash;
 }
 
-bool ASYCharacter::TryBuyItem(const FItemInfo& BuyItemInfo)
+bool ASYCharacter::TryBuyItem(FItemKey ItemKey, int ItemCount, int ItemPrice)
 {
 	UInventoryWidgetBase* InventoryWidget = SYUtil::GetWidget<UInventoryWidgetBase>(GetWorld(), EUINumber::Inventory);
 	if(!InventoryWidget)
 		return false;
 
-	int ResultPrice = BuyItemInfo.Price * BuyItemInfo.Count;
+	int ResultPrice = ItemPrice * ItemCount;
 	if (Cash < ResultPrice)
 		return false;
 
-	if (InventoryWidget->TryAddItem(BuyItemInfo))
+	if (InventoryWidget->TryAddItem(ItemKey, ItemCount))
 	{
 		Cash -= ResultPrice;
 		InventoryWidget->OnBuyItem();
@@ -95,14 +96,14 @@ bool ASYCharacter::TryBuyItem(const FItemInfo& BuyItemInfo)
 	return false;
 }
 
-bool ASYCharacter::TrySellItem(const FItemInfo& SellItemInfo)
+bool ASYCharacter::TrySellItem(int TabIndex, int ItemCount, int ItemPrice, int SlotIndex)
 {
 	UInventoryWidgetBase* InventoryWidget = SYUtil::GetWidget<UInventoryWidgetBase>(GetWorld(), EUINumber::Inventory);
 	if (!InventoryWidget)
 		return false;
 
-	int ResultPrice = SellItemInfo.Price * SellItemInfo.Count;
-	if (InventoryWidget->TrySubtractItemInSlotOrder(SellItemInfo, SellItemInfo.Count))
+	int ResultPrice = ItemPrice * ItemCount;
+	if (InventoryWidget->TrySubtractItem(TabIndex, ItemCount, SlotIndex))
 	{
 		Cash += ResultPrice;
 		InventoryWidget->OnBuyItem();

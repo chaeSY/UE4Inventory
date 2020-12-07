@@ -13,6 +13,7 @@
 #include "../ItemDefine.h"
 #include "../SYGameInstance.h"
 #include "../GameData/SYGameDataManager.h"
+#include "../GameData/SYDataTable.h"
 #include "../SYCharacter.h"
 #include "../SYPlayerController.h"
 #include "../SYUtil.h"
@@ -59,8 +60,8 @@ bool UStoreWidgetBase::TryBuyItem(int StoreSlotIndex)
 	if (!StoreItemInfoList.IsValidIndex(StoreSlotIndex))
 		return false;
 
-	const FItemInfo& StoreItemInfo = StoreItemInfoList[StoreSlotIndex];
-	return Character->TryBuyItem(StoreItemInfo);
+	const FStoreItemInfo& StoreItemInfo = StoreItemInfoList[StoreSlotIndex];
+	return Character->TryBuyItem(StoreItemInfo.ItemKey, StoreItemInfo.Count, StoreItemInfo.Price);
 }
 
 void UStoreWidgetBase::InitStoreItemInfo(int InStoreClassID)
@@ -72,8 +73,9 @@ void UStoreWidgetBase::InitStoreItemInfo(int InStoreClassID)
 	{
 		for (int ItemIndex = 0; ItemIndex < StoreTable->StoreItemList.Num(); ++ItemIndex)
 		{
-			const FItemKeyProperty& ItemKey = StoreTable->StoreItemList[ItemIndex];
-			StoreItemInfoList.Add(FItemInfo::CreateItemInfo(GetWorld(), ItemKey.Type, ItemKey.ID));
+			FItemKey ItemKey = StoreTable->StoreItemList[ItemIndex];
+			FStoreItemInfo StoreItemInfo = FItemInfoFactory::CreateStoreItemInfo(GetWorld(), ItemKey, 1);
+			StoreItemInfoList.Add(StoreItemInfo);
 		}
 	}
 }

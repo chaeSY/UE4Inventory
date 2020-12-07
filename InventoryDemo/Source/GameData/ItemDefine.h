@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameData/SYGameDataManager.h"
 #include "ItemDefine.generated.h"
 
 enum { INVALID_CLASSID = 0 };
@@ -28,12 +29,10 @@ struct FItemKey
 		};
 	};
 
-	FItemKey() :Key(0) { }
-	FItemKey(EItemType InItemType, int32 InItemID) :Type(InItemType), ID(InItemID) { }
-	bool operator== (const FItemKey& other) const
-	{
-		return Key == other.Key;
-	}
+	FItemKey();
+	FItemKey(EItemType InItemType, int32 InItemID);
+	bool operator== (const FItemKey& other) const;
+	ETableType GetTableType();
 };
 
 FORCEINLINE uint32 GetTypeHash(const FItemKey& ItemKey)
@@ -57,16 +56,4 @@ struct GAMEDATA_API FItemKeyProperty
 	{
 		return FItemKey(Type, ID);
 	}
-};
-
-struct FItemInfo
-{
-	FItemKey ItemKey;
-	int	Count = 0;
-	int Price = 0;
-	int MaxStackCount = 0;
-	TSoftObjectPtr<class UTexture2D> IconTexture;
-
-	static FItemInfo CreateItemInfo(const UObject* WorldContextObject, EItemType ItemType, int ItemID);
-	bool   IsStackable() const;
 };

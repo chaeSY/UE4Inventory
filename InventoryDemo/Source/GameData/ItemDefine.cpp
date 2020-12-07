@@ -6,44 +6,36 @@
 #include "SYGameInstance.h"
 #include "SYUtil.h"
 
-ETableType ConvertItemTypeToTableType(EItemType ItemType)
+
+FItemKey::FItemKey()
+	:Key(0)
 {
-	ETableType TableType = ETableType::None;
-	if (ItemType == EItemType::Equipment)
-	{
-		TableType = ETableType::EquipmentItem;
-	}
-	else if (ItemType == EItemType::Consumable)
-	{
-		TableType = ETableType::ConsumableItem;
-	}
-	else if (ItemType == EItemType::Etc)
-	{
-		TableType = ETableType::EtcItem;
-	}
-	
-	return TableType;
 }
 
-FItemInfo FItemInfo::CreateItemInfo(const UObject* WorldContextObject, EItemType ItemType, int ItemID)
+FItemKey::FItemKey(EItemType InItemType, int32 InItemID)
+	:Type(InItemType), ID(InItemID)
 {
-	FItemInfo ItemInfo;
-	ETableType TableType = ConvertItemTypeToTableType(ItemType);
-	FSYTableItemBase* TableRow = SYUtil::GetGameData<FSYTableItemBase>(WorldContextObject, TableType, ItemID);
-	if (TableRow)
-	{
-		ItemInfo.ItemKey.Type = ItemType;
-		ItemInfo.ItemKey.ID = ItemID;
-		ItemInfo.Count = 1;
-		ItemInfo.MaxStackCount = TableRow->MaxStackCount;
-		ItemInfo.Price = TableRow->Price;
-		ItemInfo.IconTexture = TableRow->IconTexture;
-	}
-
-	return ItemInfo;
 }
 
-bool FItemInfo::IsStackable() const
+bool FItemKey::operator==(const FItemKey& other) const
 {
-	return MaxStackCount > 1;
+	return Key == other.Key;
+}
+
+ETableType FItemKey::GetTableType()
+{
+	if (Type == EItemType::Equipment)
+	{
+		return ETableType::EquipmentItem;
+	}
+	else if (Type == EItemType::Consumable)
+	{
+		return ETableType::ConsumableItem;
+	}
+	else if (Type == EItemType::Etc)
+	{
+		return ETableType::EtcItem;
+	}
+
+	return ETableType::None;
 }

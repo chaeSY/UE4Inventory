@@ -2,6 +2,7 @@
 
 
 #include "SYGameDataManager.h"
+#include "SYDataTable.h"
 
 USYGameDataManager::USYGameDataManager()
 {

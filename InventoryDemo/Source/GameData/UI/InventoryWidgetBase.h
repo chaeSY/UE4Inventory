@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "../ItemDefine.h"
+#include "../ItemInfo.h"
 #include "Containers/BinaryHeap.h"
 #include "SYWidgetBase.h"
 #include "InventoryWidgetBase.generated.h"
@@ -12,13 +13,6 @@
 /**
  * 
  */
-
-struct FInventoryItemInfo : public FItemInfo
-{
-	int SlotIndex = INDEX_NONE;
-	static FInventoryItemInfo Create(const FItemInfo& ItemInfo, int SlotIndex);	
-};
-
 UCLASS(Blueprintable)
 class GAMEDATA_API UInventoryWidgetBase : public USYWidgetBase
 {
@@ -30,8 +24,8 @@ public:
 	auto TryGetItemInfo(int TabIndex, int SlotIndex) -> const FInventoryItemInfo*;
 	auto GetItemInfo(int tabIndex, int slotIndex)	 -> FInventoryItemInfo;
 
-	bool TryAddItem(const FItemInfo& AddedItemInfo);
-	bool TrySubtractItem(int TabIndex, int SlotIndex, int SubtractCount);
+	bool TryAddItem(FItemKey ItemKey, int ItemCount);
+	bool TrySubtractItem(int TabIndex, int SubtractCount, int SlotIndex);
 	bool TrySubtractItemInSlotOrder(const FItemInfo& SubtractItemInfo, int SubtractCount);
 	void RemoveItem(int TabIndex, int SlotIndex);
 
@@ -61,8 +55,9 @@ private:
 	void UpdateItemInfo(const FInventoryItemInfo& ItemInfo);
 	void RemoveItemInfo(int TabIndex, int SlotIndex);
 
-	bool CanAddItem(const FItemInfo& NewItemInfo);
-	void AddItem(const FItemInfo& AddedItemInfo, int SlotIndex);
+	bool IsStackableItem(FItemKey ItemKey);
+	bool CanAddItem(FItemKey ItemKey, int ItemCount);
+	void AddItem(const FInventoryItemInfo& AddedItemInfo);
 	void SwapItem(int SrcSlotIndex, int DstSlotIndex);
 
 	int ConvertItemTypeToTabIndex(EItemType ItemType);

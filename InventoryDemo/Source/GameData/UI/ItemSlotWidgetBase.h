@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "../ItemDefine.h"
+#include "../ItemInfo.h"
 #include "WidgetManager.h"
 #include "ItemSlotWidgetBase.generated.h"
 /**

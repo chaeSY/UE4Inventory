@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "SYWidgetBase.h"
 #include "../ItemDefine.h"
+#include "../ItemInfo.h"
 #include "StoreWidgetBase.generated.h"
 
 /**
@@ -36,7 +37,7 @@ private:
 	void OnClickChangeStoreButton();
 
 private:
-	TArray<FItemInfo> StoreItemInfoList;
+	TArray<FStoreItemInfo> StoreItemInfoList;
 
 	UPROPERTY()
 	TArray<UItemSlotWidgetBase*> ItemSlotWidgetList;
