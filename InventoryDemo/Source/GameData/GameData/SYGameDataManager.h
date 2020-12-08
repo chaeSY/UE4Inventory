@@ -3,20 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SYDataTable.h"
 #include "SYGameDataManager.generated.h"
 
 /**
  * 
  */
-UENUM(BlueprintType)
-enum class ETableType : uint8
-{
-	None = 0			UMETA(Display = "None"),
-	EquipmentItem = 1	UMETA(Display = "EquipmentItem"),
-	ConsumableItem = 2	UMETA(Display = "ConsumableItem"),
-	EtcItem = 3			UMETA(Display = "EtcItem"),
-	Store = 4			UMETA(Display = "Store"),
-};
 
 class UDataTable;
 struct FSYTableBase;

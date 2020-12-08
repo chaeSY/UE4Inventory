@@ -3,11 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
-#include "../ItemDefine.h"
-#include "../ItemInfo.h"
-#include "Containers/BinaryHeap.h"
 #include "SYWidgetBase.h"
+#include "Blueprint/UserWidget.h"
+#include "../ItemInfo.h"
 #include "InventoryWidgetBase.generated.h"
 
 /**

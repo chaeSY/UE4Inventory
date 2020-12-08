@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "SYWidgetBase.h"
-#include "../ItemDefine.h"
 #include "../ItemInfo.h"
 #include "StoreWidgetBase.generated.h"
 
@@ -13,6 +12,7 @@
  */
 
 class UItemSlotWidgetBase;
+
 UCLASS()
 class GAMEDATA_API UStoreWidgetBase : public USYWidgetBase
 {

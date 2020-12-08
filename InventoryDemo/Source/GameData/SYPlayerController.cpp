@@ -2,8 +2,6 @@
 
 
 #include "SYPlayerController.h"
-#include "UI/ItemSlotWidgetBase.h"
-#include "UI/InventoryWidgetBase.h"
 #include "UI/WidgetManager.h"
 
 

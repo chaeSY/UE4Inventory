@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "ItemDefine.h"
+#include "ItemInfo.h"
 #include "SYCharacter.generated.h"
 
 struct FItemInfo;

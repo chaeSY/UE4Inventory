@@ -4,7 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "../ItemDefine.h"
+#include "../ItemInfo.h"
+#include "../SYDefine.h"
 #include "SYDataTable.generated.h"
 
 /**

@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ItemSlotWidgetBase.h"
-#include "Engine/DataTable.h"
 #include "Engine/Texture2D.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
@@ -10,16 +9,9 @@
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Operation/DragDropSlot.h"
 #include "Operation/ButtonDownSlot.h"
-#include "WidgetManager.h"
-#include "StoreWidgetBase.h"
-#include "InventoryWidgetBase.h"
-#include "../SYGameInstance.h"
-#include "../SYGameModeBase.h"
-#include "../SYPlayerController.h"
-#include "../GameData/SYGameDataManager.h"
-#include "../GameData/SYDataTable.h"
-#include "Kismet/GameplayStatics.h"
+#include "SYWidgetBase.h"
 #include "../SYUtil.h"
+#include "../ItemInfo.h"
 
 void UItemSlotWidgetBase::NativeConstruct()
 {

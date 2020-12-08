@@ -2,20 +2,13 @@
 
 
 #include "StoreWidgetBase.h"
-#include "ItemSlotWidgetBase.h"
-#include "Kismet/GameplayStatics.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "Operation/DragDropSlot.h"
 #include "Operation/ButtonDownSlot.h"
-#include "InventoryWidgetBase.h"
-#include "../ItemDefine.h"
-#include "../SYGameInstance.h"
-#include "../GameData/SYGameDataManager.h"
-#include "../GameData/SYDataTable.h"
+#include "ItemSlotWidgetBase.h"
 #include "../SYCharacter.h"
-#include "../SYPlayerController.h"
 #include "../SYUtil.h"
 
 void UStoreWidgetBase::NativeConstruct()

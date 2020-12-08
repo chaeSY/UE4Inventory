@@ -1,10 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "SYCharacter.h"
-#include "SYPlayerController.h"
-#include "UI/WidgetManager.h"
 #include "UI/InventoryWidgetBase.h"
-#include "GameData/SYGameDataManager.h"
-#include "GameData/SYDataTable.h"
 #include "SYUtil.h"
 
 ASYCharacter::ASYCharacter()

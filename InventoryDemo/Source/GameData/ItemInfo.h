@@ -3,10 +3,53 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ItemDefine.h"
+#include "SYDefine.h"
+#include "ItemInfo.generated.h"
+
 /**
  * 
  */
+
+struct FItemKey
+{
+	union
+	{
+		int64 Key;
+		struct
+		{
+			EItemType Type;
+			int32 ID;
+		};
+	};
+
+	FItemKey();
+	FItemKey(EItemType InItemType, int32 InItemID);
+	bool operator== (const FItemKey& other) const;
+	ETableType GetTableType();
+};
+
+FORCEINLINE uint32 GetTypeHash(const FItemKey& ItemKey)
+{
+	uint32 Hash = FCrc::MemCrc32(&ItemKey, sizeof(FItemKey));
+	return Hash;
+}
+
+USTRUCT(BlueprintType)
+struct GAMEDATA_API FItemKeyProperty
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
+	EItemType Type = EItemType::None;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
+	int32 ID = 0;
+
+	operator FItemKey()
+	{
+		return FItemKey(Type, ID);
+	}
+};
 
 struct FItemInfo
 {
@@ -27,7 +70,6 @@ struct FStoreItemInfo : public FItemInfo
 struct FInventoryItemInfo : public FItemInfo
 {
 	int SlotIndex = INDEX_NONE;
-
 };
 
 class FItemInfoFactory

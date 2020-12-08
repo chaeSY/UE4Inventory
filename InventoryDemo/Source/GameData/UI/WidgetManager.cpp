@@ -2,9 +2,9 @@
 
 
 #include "WidgetManager.h"
-#include "InventoryWidgetBase.h"
 #include "Operation/DragDropSlot.h"
 #include "Operation/ButtonDownSlot.h"
+#include "InventoryWidgetBase.h"
 #include "StoreWidgetBase.h"
 
 USYWidgetBase* UWidgetManager::GetWidget(EUINumber UINumber)

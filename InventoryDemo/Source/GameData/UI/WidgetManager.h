@@ -4,23 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Engine/DataTable.h"
+#include "../SYDefine.h"
 #include "WidgetManager.generated.h"
 
 /**
  * 
  */
 
-UENUM(BlueprintType)
-enum class EUINumber : uint8
-{
-	None = 0		UMETA(Display = "None"),
-	Game = 1		UMETA(Display = "Game"),
-	Inventory = 2	UMETA(Display = "Inventory"),
-	Store = 3		UMETA(Display = "Store"),
-};
-
 class USYWidgetBase;
+
 UCLASS(Blueprintable, BlueprintType)
 class GAMEDATA_API UWidgetManager : public UUserWidget
 {

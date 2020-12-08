@@ -3,22 +3,14 @@
 
 #include "InventoryWidgetBase.h"
 #include "ItemSlotWidgetBase.h"
-#include "Operation/DragDropSlot.h"
-#include "Operation/ButtonDownSlot.h"
-#include "StoreWidgetBase.h"
-#include "../GameData/SYGameDataManager.h"
-#include "../GameData/SYDataTable.h"
-#include "../SYPlayerController.h"
-#include "../SYGameModeBase.h"
-#include "../SYCharacter.h"
-#include "../SYGameInstance.h"
-#include "../SYUtil.h"
-#include "../ItemInfo.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 #include "Components/Border.h"
 #include "Kismet/GameplayStatics.h"
-#include "HAL/UnrealMemory.h"
+#include "Operation/DragDropSlot.h"
+#include "Operation/ButtonDownSlot.h"
+#include "../SYCharacter.h"
+#include "../SYUtil.h"
 
 auto UInventoryWidgetBase::TryGetItemInfo(int TabIndex, int SlotIndex) -> const FInventoryItemInfo*
 {
@@ -217,8 +209,8 @@ void UInventoryWidgetBase::OnButtonDown(class UButtonDownOperation* InButtonDown
 		UButtonDownSlot* ButtonDownOp = Cast<UButtonDownSlot>(InButtonDownOp);
 		if (ButtonDownOp->PressedKey == EKeys::RightMouseButton)
 		{
-			UStoreWidgetBase* StoreWidget = SYUtil::GetWidget<UStoreWidgetBase>(GetWorld(), EUINumber::Store);
-			if (StoreWidget && StoreWidget->IsVisible())
+			UWidgetManager* WidgetManager = SYUtil::GetWidgetManager(GetWorld());
+			if (WidgetManager && WidgetManager->IsVisible(EUINumber::Store))
 			{
 				ASYCharacter* Character = GetOwningPlayerPawn<ASYCharacter>();
 				if (!Character)
@@ -452,7 +444,7 @@ void UInventoryWidgetBase::UpdateItemInfo(const FInventoryItemInfo & InItemInfo)
 	if (!PrevItemInfo)
 		return;
 
-	bool IsAddedItemToEmptySlot = PrevItemInfo->ItemKey.ID == INVALID_CLASSID && InItemInfo.ItemKey.ID != INVALID_CLASSID;
+	bool IsAddedItemToEmptySlot = PrevItemInfo->ItemKey.ID == 0 && InItemInfo.ItemKey.ID != 0;
 
 	// set item info
 	SetItemInfo(TabIndex, InItemInfo);
