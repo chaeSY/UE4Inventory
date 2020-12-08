@@ -12,28 +12,6 @@
 #include "../SYCharacter.h"
 #include "../SYUtil.h"
 
-auto UInventoryWidgetBase::TryGetItemInfo(int TabIndex, int SlotIndex) -> const FInventoryItemInfo*
-{
-	TArray<FInventoryItemInfo>* ItemInfoList = ItemInfoListMap.Find(TabIndex);
-	if (ItemInfoList && ItemInfoList->IsValidIndex(SlotIndex))
-	{
-		return &(*ItemInfoList)[SlotIndex];
-	}
-
-	return nullptr;
-}
-
-auto UInventoryWidgetBase::GetItemInfo(int TabIndex, int SlotIndex) -> FInventoryItemInfo
-{
-	TArray<FInventoryItemInfo>* itemInfoList = ItemInfoListMap.Find(TabIndex);
-	if (itemInfoList && itemInfoList->IsValidIndex(SlotIndex))
-	{
-		return (*itemInfoList)[SlotIndex];
-	}
-
-	return FInventoryItemInfo();
-}
-
 bool UInventoryWidgetBase::TryAddItem(FItemKey ItemKey, int ItemCount)
 {
 	if (!CanAddItem(ItemKey, ItemCount))
@@ -79,20 +57,20 @@ bool UInventoryWidgetBase::TryAddItem(FItemKey ItemKey, int ItemCount)
 
 bool UInventoryWidgetBase::TrySubtractItem(int TabIndex, int SubtractCount, int SlotIndex)
 {
-	const FInventoryItemInfo* ItemInfo = TryGetItemInfo(TabIndex, SlotIndex);
-	if (!ItemInfo)
+	const FInventoryItemInfo& ItemInfo = GetItemInfo(TabIndex, SlotIndex);
+	if (ItemInfo.ItemKey.ID == 0)
 		return false;
 
-	if (ItemInfo->Count < SubtractCount)
+	if (ItemInfo.Count < SubtractCount)
 		return false;
 
-	if (SubtractCount == ItemInfo->Count)
+	if (SubtractCount == ItemInfo.Count)
 	{
 		RemoveItem(TabIndex, SlotIndex);
 	}
 	else
 	{
-		int RemainItemCount = ItemInfo->Count - SubtractCount;
+		int RemainItemCount = ItemInfo.Count - SubtractCount;
 		UpdateItemCount(TabIndex, SlotIndex, RemainItemCount);
 	}
 
@@ -178,18 +156,15 @@ void UInventoryWidgetBase::OnDragDrop(UDragDropOperation* InDragDropOp)
 			if (DragDrop->FromSlotIndex == DragDrop->ToSlotIndex)
 				return;
 
-			const FInventoryItemInfo* SrcItemInfo = TryGetItemInfo(CurrentTabIndex, DragDrop->FromSlotIndex);
-			const FInventoryItemInfo* DstItemInfo = TryGetItemInfo(CurrentTabIndex, DragDrop->ToSlotIndex);
-			if (!SrcItemInfo || !DstItemInfo)
-				return;
-
-			bool IsEmptySrcSlot = SrcItemInfo->ItemKey.ID == 0;
-			bool IsEmptyDstSlot = DstItemInfo->ItemKey.ID == 0;
+			const FInventoryItemInfo& SrcItemInfo = GetItemInfo(CurrentTabIndex, DragDrop->FromSlotIndex);
+			const FInventoryItemInfo& DstItemInfo = GetItemInfo(CurrentTabIndex, DragDrop->ToSlotIndex);
+			bool IsEmptySrcSlot = SrcItemInfo.ItemKey.ID == 0;
+			bool IsEmptyDstSlot = DstItemInfo.ItemKey.ID == 0;
 			if (!IsEmptySrcSlot)
 			{
 				if (IsEmptyDstSlot)
 				{
-					FInventoryItemInfo NewItemInfo = FItemInfoFactory::CreateInventoryItemInfo(GetWorld(), SrcItemInfo->ItemKey, SrcItemInfo->Count, DragDrop->ToSlotIndex);
+					FInventoryItemInfo NewItemInfo = FItemInfoFactory::CreateInventoryItemInfo(GetWorld(), SrcItemInfo.ItemKey, SrcItemInfo.Count, DragDrop->ToSlotIndex);
 					AddItem(NewItemInfo);
 					RemoveItem(CurrentTabIndex, DragDrop->FromSlotIndex);
 				}
@@ -216,11 +191,8 @@ void UInventoryWidgetBase::OnButtonDown(class UButtonDownOperation* InButtonDown
 				if (!Character)
 					return;
 				
-				const FInventoryItemInfo* ItemInfo = TryGetItemInfo(CurrentTabIndex, ButtonDownOp->SlotIndex);
-				if (!ItemInfo)
-					return;
-				
-				Character->TrySellItem(CurrentTabIndex, ItemInfo->Count, ItemInfo->Price, ItemInfo->SlotIndex);
+				const FInventoryItemInfo& ItemInfo = GetItemInfo(CurrentTabIndex, ButtonDownOp->SlotIndex);
+				Character->TrySellItem(CurrentTabIndex, ItemInfo.Count, ItemInfo.Price, ItemInfo.SlotIndex);
 			}
 			else
 			{
@@ -280,11 +252,8 @@ void UInventoryWidgetBase::UpdateWidgetItemSlot(int SlotIndex)
 	if (!SlotWidget)
 		return;
 
-	const FItemInfo* ItemInfo = TryGetItemInfo(CurrentTabIndex, SlotIndex);
-	if (ItemInfo)
-	{
-		SlotWidget->UpdateSlot(*ItemInfo);
-	}
+	const FItemInfo& ItemInfo = GetItemInfo(CurrentTabIndex, SlotIndex);
+	SlotWidget->UpdateSlot(ItemInfo);
 }
 
 void UInventoryWidgetBase::UpdateWidgetItemSlotAll()
@@ -358,6 +327,19 @@ void UInventoryWidgetBase::InitContainer()
 		{
 			EmptySlotMap[TabIndex].Add(invenSlotIndex);
 		}
+	}
+}
+
+auto UInventoryWidgetBase::GetItemInfo(int TabIndex, int SlotIndex) ->const FInventoryItemInfo&
+{
+	TArray<FInventoryItemInfo>* ItemInfoList = ItemInfoListMap.Find(TabIndex);
+	if (ItemInfoList && ItemInfoList->IsValidIndex(SlotIndex))
+	{
+		return (*ItemInfoList)[SlotIndex];
+	}
+	else
+	{
+		return FInventoryItemInfo::Empty;
 	}
 }
 
@@ -440,11 +422,9 @@ void UInventoryWidgetBase::SetItemInfo(int TabIndex, const FInventoryItemInfo& N
 void UInventoryWidgetBase::UpdateItemInfo(const FInventoryItemInfo & InItemInfo)
 {
 	int TabIndex = ConvertItemTypeToTabIndex(InItemInfo.ItemKey.Type);
-	const FInventoryItemInfo* PrevItemInfo = TryGetItemInfo(TabIndex, InItemInfo.SlotIndex);
-	if (!PrevItemInfo)
-		return;
+	const FInventoryItemInfo& PrevItemInfo = GetItemInfo(TabIndex, InItemInfo.SlotIndex);
 
-	bool IsAddedItemToEmptySlot = PrevItemInfo->ItemKey.ID == 0 && InItemInfo.ItemKey.ID != 0;
+	bool IsAddedItemToEmptySlot = PrevItemInfo.ItemKey.ID == 0 && InItemInfo.ItemKey.ID != 0;
 
 	// set item info
 	SetItemInfo(TabIndex, InItemInfo);

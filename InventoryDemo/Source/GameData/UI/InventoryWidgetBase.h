@@ -19,9 +19,6 @@ class GAMEDATA_API UInventoryWidgetBase : public USYWidgetBase
 	enum { EquipmentTab = 0, ConsumableTab = 1, EtcTab = 2, Tab_End };
 
 public:
-	auto TryGetItemInfo(int TabIndex, int SlotIndex) -> const FInventoryItemInfo*;
-	auto GetItemInfo(int tabIndex, int slotIndex)	 -> FInventoryItemInfo;
-
 	bool TryAddItem(FItemKey ItemKey, int ItemCount);
 	bool TrySubtractItem(int TabIndex, int SubtractCount, int SlotIndex);
 	bool TrySubtractItemInSlotOrder(const FItemInfo& SubtractItemInfo, int SubtractCount);
@@ -42,6 +39,8 @@ private:
 	void UpdateWidgetCash();
 
 	void InitContainer();
+	
+	auto GetItemInfo(int TabIndex, int SlotIndex) ->const FInventoryItemInfo&;
 	int	 GetEmptySlotIndex(int TabIndex);
 	int	 GetEmptySlotCount(int TabIndex);
 

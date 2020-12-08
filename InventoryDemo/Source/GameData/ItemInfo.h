@@ -70,6 +70,7 @@ struct FStoreItemInfo : public FItemInfo
 struct FInventoryItemInfo : public FItemInfo
 {
 	int SlotIndex = INDEX_NONE;
+	const static FInventoryItemInfo Empty;
 };
 
 class FItemInfoFactory

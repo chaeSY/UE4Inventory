@@ -41,6 +41,9 @@ bool FItemInfo::IsStackable() const
 	return MaxStackCount > 1;
 }
 
+const FInventoryItemInfo FInventoryItemInfo::Empty;
+
+
 FStoreItemInfo FItemInfoFactory::CreateEmptyStoreItemInfo()
 {
 	return FStoreItemInfo();
