@@ -64,7 +64,7 @@ struct FItemInfo
 
 struct FStoreItemInfo : public FItemInfo
 {
-
+	const static FStoreItemInfo Empty;
 };
 
 struct FInventoryItemInfo : public FItemInfo

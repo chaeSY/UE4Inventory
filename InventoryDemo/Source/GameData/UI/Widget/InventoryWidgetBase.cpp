@@ -7,10 +7,9 @@
 #include "Components/Button.h"
 #include "Components/Border.h"
 #include "Kismet/GameplayStatics.h"
-#include "Operation/DragDropSlot.h"
-#include "Operation/ButtonDownSlot.h"
-#include "../SYCharacter.h"
-#include "../SYUtil.h"
+#include "UIOperation.h"
+#include "SYCharacter.h"
+#include "SYUtil.h"
 
 bool UInventoryWidgetBase::TryAddItem(FItemKey ItemKey, int ItemCount)
 {
@@ -148,40 +147,40 @@ void UInventoryWidgetBase::NativeConstruct()
 
 void UInventoryWidgetBase::OnDragDrop(UDragDropOperation* InDragDropOp)
 {
-	if (InDragDropOp->IsA(UDragDropSlot::StaticClass()))
+	if (InDragDropOp->IsA(USYSlotDragDropOp::StaticClass()))
 	{
-		UDragDropSlot* DragDrop = Cast<UDragDropSlot>(InDragDropOp);
-		if (DragDrop->ToUINumber == EUINumber::Inventory)
+		USYSlotDragDropOp* DragDrop = Cast<USYSlotDragDropOp>(InDragDropOp);
+		if (DragDrop->DstUINumber == EUINumber::Inventory)
 		{
-			if (DragDrop->FromSlotIndex == DragDrop->ToSlotIndex)
+			if (DragDrop->SrcSlotIndex == DragDrop->DstSlotIndex)
 				return;
 
-			const FInventoryItemInfo& SrcItemInfo = GetItemInfo(CurrentTabIndex, DragDrop->FromSlotIndex);
-			const FInventoryItemInfo& DstItemInfo = GetItemInfo(CurrentTabIndex, DragDrop->ToSlotIndex);
+			const FInventoryItemInfo& SrcItemInfo = GetItemInfo(CurrentTabIndex, DragDrop->SrcSlotIndex);
+			const FInventoryItemInfo& DstItemInfo = GetItemInfo(CurrentTabIndex, DragDrop->DstSlotIndex);
 			bool IsEmptySrcSlot = SrcItemInfo.ItemKey.ID == 0;
 			bool IsEmptyDstSlot = DstItemInfo.ItemKey.ID == 0;
 			if (!IsEmptySrcSlot)
 			{
 				if (IsEmptyDstSlot)
 				{
-					FInventoryItemInfo NewItemInfo = FItemInfoFactory::CreateInventoryItemInfo(GetWorld(), SrcItemInfo.ItemKey, SrcItemInfo.Count, DragDrop->ToSlotIndex);
+					FInventoryItemInfo NewItemInfo = FItemInfoFactory::CreateInventoryItemInfo(GetWorld(), SrcItemInfo.ItemKey, SrcItemInfo.Count, DragDrop->DstSlotIndex);
 					AddItem(NewItemInfo);
-					RemoveItem(CurrentTabIndex, DragDrop->FromSlotIndex);
+					RemoveItem(CurrentTabIndex, DragDrop->SrcSlotIndex);
 				}
 				else // !IsEmptyDstSlot
 				{
-					SwapItem(DragDrop->FromSlotIndex, DragDrop->ToSlotIndex);
+					SwapItem(DragDrop->SrcSlotIndex, DragDrop->DstSlotIndex);
 				}
 			}
 		}
 	}
 }
 
-void UInventoryWidgetBase::OnButtonDown(class UButtonDownOperation* InButtonDownOp)
+void UInventoryWidgetBase::OnButtonDown(class USYMouseButtonDownOp* InButtonDownOp)
 {
-	if (InButtonDownOp->IsA(UButtonDownSlot::StaticClass()))
+	if (InButtonDownOp->IsA(USYSlotMouseButtonDownOp::StaticClass()))
 	{
-		UButtonDownSlot* ButtonDownOp = Cast<UButtonDownSlot>(InButtonDownOp);
+		USYSlotMouseButtonDownOp* ButtonDownOp = Cast<USYSlotMouseButtonDownOp>(InButtonDownOp);
 		if (ButtonDownOp->PressedKey == EKeys::RightMouseButton)
 		{
 			UWidgetManager* WidgetManager = SYUtil::GetWidgetManager(GetWorld());

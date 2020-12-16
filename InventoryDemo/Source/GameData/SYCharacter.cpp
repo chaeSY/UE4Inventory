@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "SYCharacter.h"
-#include "UI/InventoryWidgetBase.h"
+#include "InventoryWidgetBase.h"
 #include "SYUtil.h"
 
 ASYCharacter::ASYCharacter()

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "SYWidgetBase.h"
 #include "Blueprint/UserWidget.h"
-#include "../ItemInfo.h"
+#include "ItemInfo.h"
 #include "InventoryWidgetBase.generated.h"
 
 /**
@@ -30,7 +30,7 @@ public:
 private:
 	virtual void NativeConstruct() override;
 	virtual void OnDragDrop(class UDragDropOperation* InDragDropOp);
-	virtual void OnButtonDown(class UButtonDownOperation* InButtonDownOp);
+	virtual void OnButtonDown(class USYMouseButtonDownOp* InButtonDownOp);
 
 	void BindWidget();
 	void UpdateWidgetItemSlot(int SlotIndex);
@@ -38,6 +38,13 @@ private:
 	void UpdateWidgetTabColor(int PrevTabIndex);
 	void UpdateWidgetCash();
 
+	TArray<class UItemSlotWidgetBase*> ItemSlotWidgetList;
+	class UButton* TabButton[Tab_End];
+	class UTextBlock* CashText;
+	class UButton* AddCashButton;
+
+
+private:
 	void InitContainer();
 	
 	auto GetItemInfo(int TabIndex, int SlotIndex) ->const FInventoryItemInfo&;
@@ -59,11 +66,7 @@ private:
 
 	int ConvertItemTypeToTabIndex(EItemType ItemType);
 
-private:
-	TArray<class UItemSlotWidgetBase*> ItemSlotWidgetList;
-	class UButton* TabButton[Tab_End];
-	class UTextBlock* CashText;
-	class UButton* AddCashButton;
+
 
 	int CurrentTabIndex;
 	using ArrayHeap = TArray<int>;

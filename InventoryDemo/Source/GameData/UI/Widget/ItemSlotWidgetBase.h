@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
-#include "WidgetManager.h"
+#include "SYWidgetBase.h"
+#include "SYDefine.h"
 #include "ItemSlotWidgetBase.generated.h"
 /**
  * 
@@ -13,7 +13,7 @@
 struct FItemInfo;
 
 UCLASS()
-class GAMEDATA_API UItemSlotWidgetBase : public UUserWidget
+class GAMEDATA_API UItemSlotWidgetBase : public USYWidgetBase
 {
 	GENERATED_BODY()
 
@@ -22,19 +22,19 @@ public:
 	void SetParentUINumber(EUINumber UINumber);
 	void UpdateSlot(const FItemInfo& InItemInfo);
 
-	DECLARE_EVENT_OneParam(UItemSlotWidgetBase, FSlotButtonHoverEvent, int32);
-	FSlotButtonHoverEvent OnHovered;
+	DECLARE_EVENT_OneParam(UItemSlotWidgetBase, FSlotHoverEvent, int32); // Param1: SlotIndex
+	FSlotHoverEvent OnHovered;
 
 private:
-	virtual void NativeConstruct() override;
-	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent);
-	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation);
-	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation);
-	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent);
-	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent);
+	virtual void NativeConstruct() final;
+	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) final;
+	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) final;
+	
+	virtual auto CreateSrcDragDropOp() ->UDragDropOperation* final;
+	virtual void SetDstDragDropOp(UDragDropOperation* OutDragDropOp) final;
+	virtual auto CreateButtonDownOp(FKey key) -> USYMouseButtonDownOp* final;
 
 	void BindWidget();
-	void OnMouseButtonDown(const FPointerEvent& InMouseEvent);
 	bool IsShowItemCount(const FItemInfo& InItemInfo);
 
 private:

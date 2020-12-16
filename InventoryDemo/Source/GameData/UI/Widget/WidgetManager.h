@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "../SYDefine.h"
+#include "SYDefine.h"
 #include "WidgetManager.generated.h"
 
 /**
@@ -40,4 +40,10 @@ private:
 private:
 	UPROPERTY()
 	TMap<EUINumber, USYWidgetBase*> UIMap;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class USYUIStore> StoreClass;
+
+	UPROPERTY()
+	class USYUIStore* UIStore;
 };

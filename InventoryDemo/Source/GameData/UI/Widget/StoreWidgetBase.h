@@ -4,7 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "SYWidgetBase.h"
-#include "../ItemInfo.h"
+#include "ItemInfo.h"
+#include "ItemSlotWidgetBase.h"
 #include "StoreWidgetBase.generated.h"
 
 /**
@@ -12,33 +13,37 @@
  */
 
 class UItemSlotWidgetBase;
+class UDragDropOperation;
+class USYMouseButtonDownOp;
 
 UCLASS()
 class GAMEDATA_API UStoreWidgetBase : public USYWidgetBase
 {
 	GENERATED_BODY()
-	enum {MaxStoreSlotCount = 20};
+
+public:
+	enum { MaxStoreSlotCount = 20 };
+
+	DECLARE_EVENT_OneParam(UStoreWidgetBase, FChangeStoreButtonClickEvent, int32); // Param1: ClassID
+	FChangeStoreButtonClickEvent OnClickedChangeStore;
+
+	DECLARE_EVENT_OneParam(UStoreWidgetBase, FMouseOverSlotEvent, int32); // Param1: SlotIndex
+	FMouseOverSlotEvent OnMouseOverInSlot;
+
+	void UpdateSlot(int SlotIndex, const FItemInfo& ItemInfo);
+	void UpdatePriceText(int Price);
 
 private:
 	virtual void NativeConstruct() final;
-	virtual void OnDragDrop(class UDragDropOperation* InDragDropOp) final;
-	virtual void OnButtonDown(class UButtonDownOperation* InButtonDownOp) final;
-	
-	bool TryBuyItem(int StoreSlotIndex);
-	void InitStoreItemInfo(int InStoreClassID);
-
 	void BindWidget();
-	void UpdateWidgetSlotAll();
 
 	UFUNCTION()
-	void OnMouseOverSlot(int SlotIndex);
+	void OnMouseOverSlotInternal(int SlotIndex);
 
 	UFUNCTION()
-	void OnClickChangeStoreButton();
+	void OnClickChangeStoreButtonInternal();
 
 private:
-	TArray<FStoreItemInfo> StoreItemInfoList;
-
 	UPROPERTY()
 	TArray<UItemSlotWidgetBase*> ItemSlotWidgetList;
 
