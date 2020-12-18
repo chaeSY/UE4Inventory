@@ -31,16 +31,15 @@ public:
 	void ShowUI(EUINumber UINumber);
 	void HideUI(EUINumber UINumber);
 
-	void DragDrop(class UDragDropOperation* DragDropOp);
-
 private:
-	virtual void NativeConstruct() override;
+	virtual void NativeConstruct() final;
 	void BindWidget();
 
 private:
 	UPROPERTY()
 	TMap<EUINumber, USYWidgetBase*> UIMap;
 
+	//temp
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class USYUIStore> StoreClass;
 

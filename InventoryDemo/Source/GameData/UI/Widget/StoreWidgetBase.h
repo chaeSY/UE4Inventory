@@ -24,14 +24,14 @@ class GAMEDATA_API UStoreWidgetBase : public USYWidgetBase
 public:
 	enum { MaxStoreSlotCount = 20 };
 
-	DECLARE_EVENT_OneParam(UStoreWidgetBase, FChangeStoreButtonClickEvent, int32); // Param1: ClassID
+	void UpdateSlot(int SlotIndex, const FItemInfo& ItemInfo);
+	void UpdatePriceText(int Price);
+
+	DECLARE_EVENT_OneParam(UStoreWidgetBase, FChangeStoreButtonClickEvent, int32); // Param1: StoreID
 	FChangeStoreButtonClickEvent OnClickedChangeStore;
 
 	DECLARE_EVENT_OneParam(UStoreWidgetBase, FMouseOverSlotEvent, int32); // Param1: SlotIndex
 	FMouseOverSlotEvent OnMouseOverInSlot;
-
-	void UpdateSlot(int SlotIndex, const FItemInfo& ItemInfo);
-	void UpdatePriceText(int Price);
 
 private:
 	virtual void NativeConstruct() final;

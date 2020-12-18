@@ -27,9 +27,9 @@ public:
 	FSYMouseButtonDownEvent OnMouseButtonDownEvent;
 
 protected:
-	virtual UDragDropOperation* CreateSrcDragDropOp();
+	virtual auto CreateSrcDragDropOp() -> UDragDropOperation*;
 	virtual void SetDstDragDropOp(UDragDropOperation* OutDragDropOp);
-	virtual USYMouseButtonDownOp* CreateButtonDownOp(FKey key);
+	virtual auto CreateButtonDownOp(FKey key) ->USYMouseButtonDownOp*;
 
 private:
 	virtual FReply	NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) final;

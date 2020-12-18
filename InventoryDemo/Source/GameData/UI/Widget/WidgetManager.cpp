@@ -5,7 +5,6 @@
 #include "UIOperation.h"
 #include "InventoryWidgetBase.h"
 #include "StoreWidgetBase.h"
-
 #include "SYUIStore.h"
 
 USYWidgetBase* UWidgetManager::GetWidget(EUINumber UINumber)
@@ -69,19 +68,3 @@ void UWidgetManager::BindWidget()
 	
 
 }
-
-//void UWidgetManager::DragDrop(UDragDropOperation* InDragDropOp)
-//{
-//	if (InDragDropOp->IsA(USYSlotDragDropOp::StaticClass()))
-//	{
-//		USYSlotDragDropOp* DragDropOp = Cast<USYSlotDragDropOp>(InDragDropOp);
-//		if (!DragDropOp)
-//			return;
-//
-//		USYWidgetBase* Widget = UIMap.FindRef(DragDropOp->SrcUINumber);
-//		if (!Widget)
-//			return;
-//
-//		Widget->OnDragDrop(DragDropOp);
-//	}
-//}

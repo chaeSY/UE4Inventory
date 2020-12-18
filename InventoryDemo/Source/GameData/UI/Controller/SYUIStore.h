@@ -36,5 +36,5 @@ private:
 
 private:
 	class UStoreWidgetBase* StoreWidget;
-	TArray<FStoreItemInfo> StoreItemInfoList;
+	TArray<FStoreItemInfo>  StoreItemInfoList;
 };
