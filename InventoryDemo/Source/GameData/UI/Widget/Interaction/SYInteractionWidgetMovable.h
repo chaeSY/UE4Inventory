@@ -17,8 +17,5 @@ class GAMEDATA_API USYInteractionWidgetMovable: public USYInteractionWidgetBase
 	GENERATED_BODY()
 
 protected:
-	//virtual void OnDragDrop(UDragDropOperation* InOperation);
 	virtual void OnDragging(UDragDropOperation* InOperation);
-
-protected:
 };

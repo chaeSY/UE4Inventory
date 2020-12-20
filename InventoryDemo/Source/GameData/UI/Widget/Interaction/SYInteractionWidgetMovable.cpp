@@ -8,21 +8,6 @@
 #include "SYWidgetBase.h"
 #include "SYUtil.h"
 
-//UObject* USYInteractionWidgetMovable::CreatePayload()
-//{
-//
-//}
-//
-//void USYInteractionWidgetMovable::SetPayloadOnDrop(UObject* Payload)
-//{
-//
-//}
-
-//void USYInteractionWidgetMovable::OnDragDrop(UDragDropOperation* InOperation)
-//{
-//
-//}
-
 void USYInteractionWidgetMovable::OnDragging(UDragDropOperation* InOperation)
 {
 	USYWidgetBase* ParentWidget = SYUtil::GetWidget(GetWorld(), ParentUINumber);
@@ -33,24 +18,21 @@ void USYInteractionWidgetMovable::OnDragging(UDragDropOperation* InOperation)
 	if (!LayoutCanvas)
 		return;
 	
-	//FGeometry vpgeo = UWidgetLayoutLibrary::GetViewportWidgetGeometry(GetWorld());
-	//
-	//FVector2D parentWidgetPos = LayoutCanvas->GetPosition(); // anchor ±âÁØÀÇ ÁÂÇ¥
-	//FAnchors anchor = LayoutCanvas->GetAnchors();
-	//FVector2D anchorPos = vpgeo.Size * anchor.Minimum;
-	//
-	//FVector2D vpPos = parentWidgetPos + anchorPos; //ÇöÀç À§Á¬ÀÇ ½ÇÁ¦ ºäÆ÷Æ® ÁÂÇ¥
+	FVector2D alignment = LayoutCanvas->GetAlignment();
+	FAnchors  anchor = LayoutCanvas->GetAnchors();
+	FVector2D WidgetPos = LayoutCanvas->GetPosition(); // anchor ±âÁØÀÇ ÁÂÇ¥
+	FVector2D WidgetSize = LayoutCanvas->GetSize();
+
+	FGeometry vpgeo = UWidgetLayoutLibrary::GetViewportWidgetGeometry(GetWorld());
+	FVector2D vpAnchorPos = vpgeo.Size * anchor.Minimum;
+	FVector2D vpAlignmentSize = WidgetSize * alignment;
+
+	FVector2D vpWidgetPos = WidgetPos + vpAnchorPos - vpAlignmentSize; //ÇöÀç À§Á¬ÀÇ ½ÇÁ¦ ºäÆ÷Æ® ÁÂÇ¥
+	FVector2D Offset = vpWidgetPos - WidgetPos;
+
 	FVector2D MousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetWorld());
-	//
-	//FVector2D Offset = vpPos - parentWidgetPos;
-	//FVector2D ResultPos = MousePos - Offset;
-	//
-	////calc my offset
-	//ResultPos -= InOperation->Offset;
-
-	//LayoutCanvas->SetPosition(ResultPos);
-
-	LayoutCanvas->SetPosition(MousePos);
-
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, MousePos.ToString());
+	FVector2D ResultPos = MousePos - Offset;
+	
+	ResultPos -= InOperation->Offset;
+	LayoutCanvas->SetPosition(ResultPos);
 }
