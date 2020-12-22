@@ -23,10 +23,10 @@ private:
 	void InitStoreItemInfo(int InStoreClassID);
 
 	UFUNCTION()
-	void OnDragDrop(class UDragDropOperation* DragDropOp);
+	void OnDragDropSlot(EUINumber SrcUINumber, int32 StoreSlotIndex, EUINumber DstUINumber, int32 DstSlotIndex);
 
 	UFUNCTION()
-	void OnMouseButtonDown(class USYMouseButtonDownOp* MouseButtonDownOp);
+	void OnMouseRButtonDownSlot(int SlotIndex);
 
 	UFUNCTION()
 	void OnMouseOverInSlot(int SlotIndex);

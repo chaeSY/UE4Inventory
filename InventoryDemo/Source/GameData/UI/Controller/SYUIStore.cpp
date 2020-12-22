@@ -11,45 +11,30 @@
 void USYUIStore::Bind()
 {
 	Widget = SYUtil::GetWidget(this, EUINumber::Store);
-	if (Widget)
-	{
-		Widget->OnDragDropEvent.AddUFunction(this, FName("OnDragDrop"));
-		Widget->OnMouseButtonDownEvent.AddUFunction(this, FName("OnMouseButtonDown"));
-	}
-
 	StoreWidget = Cast<UStoreWidgetBase>(Widget);
 	if (StoreWidget)
 	{
-		StoreWidget->OnMouseOverInSlot.AddUFunction(this, FName("OnMouseOverInSlot"));
-		StoreWidget->OnClickedChangeStore.AddUFunction(this, FName("OnClickedChangeStoreButton"));
+		StoreWidget->OnDragDrop2().AddUFunction(this, FName("OnDragDropSlot"));
+		StoreWidget->OnMouseOverSlot().AddUFunction(this, FName("OnMouseOverInSlot"));
+		StoreWidget->OnMouseRButtonDownSlot().AddUFunction(this, FName("OnMouseRButtonDownSlot"));
+		StoreWidget->OnClickedChangeStoreButton().AddUFunction(this, FName("OnClickedChangeStoreButton"));
 	}
 
 	//test
 	OnClickedChangeStoreButton(1);
 }
 
-void USYUIStore::OnDragDrop(UDragDropOperation* DragDropOp)
+void USYUIStore::OnDragDropSlot(EUINumber SrcUINumber, int32 StoreSlotIndex, EUINumber DstUINumber, int32 DstSlotIndex)
 {
-	if (DragDropOp->IsA(USYSlotDragDropOp::StaticClass()))
+	if (DstUINumber == EUINumber::Inventory)
 	{
-		USYSlotDragDropOp* op = Cast<USYSlotDragDropOp>(DragDropOp);
-		if (op->DstUINumber == EUINumber::Inventory)
-		{
-			TryBuyItem(op->SrcSlotIndex);
-		}
+		TryBuyItem(StoreSlotIndex);
 	}
 }
 
-void USYUIStore::OnMouseButtonDown(USYMouseButtonDownOp* MouseButtonDownOp)
+void USYUIStore::OnMouseRButtonDownSlot(int SlotIndex)
 {
-	if (MouseButtonDownOp->IsA(USYSlotMouseButtonDownOp::StaticClass()))
-	{
-		USYSlotMouseButtonDownOp* ButtonDownOp = Cast<USYSlotMouseButtonDownOp>(MouseButtonDownOp);
-		if (ButtonDownOp->PressedKey == EKeys::RightMouseButton)
-		{
-			TryBuyItem(ButtonDownOp->SlotIndex);
-		}
-	}
+	TryBuyItem(SlotIndex);
 }
 
 bool USYUIStore::TryBuyItem(int StoreSlotIndex)

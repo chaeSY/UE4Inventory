@@ -2,7 +2,6 @@
 
 
 #include "InventoryWidgetBase.h"
-#include "ItemSlotWidgetBase.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 #include "Components/Border.h"
@@ -10,6 +9,7 @@
 #include "UIOperation.h"
 #include "SYCharacter.h"
 #include "SYUtil.h"
+#include "SYInteractionWidgetItemSlot.h"
 
 bool UInventoryWidgetBase::TryAddItem(FItemKey ItemKey, int ItemCount)
 {
@@ -145,36 +145,38 @@ void UInventoryWidgetBase::NativeConstruct()
 	UpdateWidgetCash();
 }
 
-void UInventoryWidgetBase::OnDragDrop(UDragDropOperation* InDragDropOp)
-{
-	if (InDragDropOp->IsA(USYSlotDragDropOp::StaticClass()))
-	{
-		USYSlotDragDropOp* DragDrop = Cast<USYSlotDragDropOp>(InDragDropOp);
-		if (DragDrop->DstUINumber == EUINumber::Inventory)
-		{
-			if (DragDrop->SrcSlotIndex == DragDrop->DstSlotIndex)
-				return;
+//void UInventoryWidgetBase::OnDragDrop(UDragDropOperation* InDragDropOp)
+//{
+//	if (InDragDropOp->IsA(USYSlotDragDropOp::StaticClass()))
+//	{
+//		USYSlotDragDropOp* DragDrop = Cast<USYSlotDragDropOp>(InDragDropOp);
+//		if (DragDrop->DstUINumber == EUINumber::Inventory)
+//		{
+//			if (DragDrop->SrcSlotIndex == DragDrop->DstSlotIndex)
+//				return;
+//
+//			const FInventoryItemInfo& SrcItemInfo = GetItemInfo(CurrentTabIndex, DragDrop->SrcSlotIndex);
+//			const FInventoryItemInfo& DstItemInfo = GetItemInfo(CurrentTabIndex, DragDrop->DstSlotIndex);
+//			bool IsEmptySrcSlot = SrcItemInfo.ItemKey.ID == 0;
+//			bool IsEmptyDstSlot = DstItemInfo.ItemKey.ID == 0;
+//			if (!IsEmptySrcSlot)
+//			{
+//				if (IsEmptyDstSlot)
+//				{
+//					FInventoryItemInfo NewItemInfo = FItemInfoFactory::CreateInventoryItemInfo(GetWorld(), SrcItemInfo.ItemKey, SrcItemInfo.Count, DragDrop->DstSlotIndex);
+//					AddItem(NewItemInfo);
+//					RemoveItem(CurrentTabIndex, DragDrop->SrcSlotIndex);
+//				}
+//				else // !IsEmptyDstSlot
+//				{
+//					SwapItem(DragDrop->SrcSlotIndex, DragDrop->DstSlotIndex);
+//				}
+//			}
+//		}
+//	}
+//}
 
-			const FInventoryItemInfo& SrcItemInfo = GetItemInfo(CurrentTabIndex, DragDrop->SrcSlotIndex);
-			const FInventoryItemInfo& DstItemInfo = GetItemInfo(CurrentTabIndex, DragDrop->DstSlotIndex);
-			bool IsEmptySrcSlot = SrcItemInfo.ItemKey.ID == 0;
-			bool IsEmptyDstSlot = DstItemInfo.ItemKey.ID == 0;
-			if (!IsEmptySrcSlot)
-			{
-				if (IsEmptyDstSlot)
-				{
-					FInventoryItemInfo NewItemInfo = FItemInfoFactory::CreateInventoryItemInfo(GetWorld(), SrcItemInfo.ItemKey, SrcItemInfo.Count, DragDrop->DstSlotIndex);
-					AddItem(NewItemInfo);
-					RemoveItem(CurrentTabIndex, DragDrop->SrcSlotIndex);
-				}
-				else // !IsEmptyDstSlot
-				{
-					SwapItem(DragDrop->SrcSlotIndex, DragDrop->DstSlotIndex);
-				}
-			}
-		}
-	}
-}
+
 
 void UInventoryWidgetBase::OnButtonDown(class USYMouseButtonDownOp* InButtonDownOp)
 {
@@ -207,12 +209,13 @@ void UInventoryWidgetBase::BindWidget()
 	// binding ItemSlotWidgetList
 	for (int InvenSlotIdex = 0; InvenSlotIdex < InventorySlotCount; ++InvenSlotIdex)
 	{
-		FString SlotWidgetName = FString::Printf(TEXT("InventorySlot_%d"), InvenSlotIdex);
-		UItemSlotWidgetBase* ItemSlotWidget = Cast<UItemSlotWidgetBase>(GetWidgetFromName(*SlotWidgetName));
+		FString WidgetName = FString::Printf(TEXT("InventorySlot_%d"), InvenSlotIdex);
+		USYInteractionWidgetItemSlot* ItemSlotWidget = Cast<USYInteractionWidgetItemSlot>(GetWidgetFromName(*WidgetName));
 		if (ItemSlotWidget)
 		{
 			ItemSlotWidget->SetSlotIndex(InvenSlotIdex);
 			ItemSlotWidget->SetParentUINumber(EUINumber::Inventory);
+			ItemSlotWidget->OnDragDrop().AddUFunction(this, FName("OnDragDropInternal"));
 			ItemSlotWidgetList.Add(ItemSlotWidget);
 		}
 	}
@@ -247,7 +250,7 @@ void UInventoryWidgetBase::UpdateWidgetItemSlot(int SlotIndex)
 	if (!ItemSlotWidgetList.IsValidIndex(SlotIndex))
 		return;
 
-	UItemSlotWidgetBase* SlotWidget = ItemSlotWidgetList[SlotIndex];
+	USYInteractionWidgetItemSlot* SlotWidget = ItemSlotWidgetList[SlotIndex];
 	if (!SlotWidget)
 		return;
 
@@ -554,4 +557,9 @@ void UInventoryWidgetBase::OnClickAddCash()
 
 	Character->AddCash(2000);
 	UpdateWidgetCash();
+}
+
+void UInventoryWidgetBase::OnDragDropInternal(EUINumber SrcUINumber, int32 InventorySlotIndex, EUINumber DstUINumber, int32 DstSlotIndex)
+{
+	DragDropEvent.Broadcast(SrcUINumber, InventorySlotIndex, DstUINumber, DstSlotIndex);
 }

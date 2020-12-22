@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SYWidgetBase.h"
+#include "SYInteractionWidgetBase.h"
 #include "SYDefine.h"
-#include "ItemSlotWidgetBase.generated.h"
+#include "SYInteractionWidgetItemSlot.generated.h"
 /**
  * 
  */
@@ -13,33 +13,53 @@
 struct FItemInfo;
 
 UCLASS()
-class GAMEDATA_API UItemSlotWidgetBase : public USYWidgetBase
+class UDragDropPayloadSlot : public UDragDropPayloadBase
 {
 	GENERATED_BODY()
+
+public:
+	int SrcSlotIndex;
+	int DstSlotIndex;
+};
+
+UCLASS()
+class GAMEDATA_API USYInteractionWidgetItemSlot : public USYInteractionWidgetBase
+{
+	GENERATED_BODY()
+	DECLARE_EVENT_OneParam(USYInteractionWidgetBase, FSlotEvent, int32); // Param1: SlotIndex
+	DECLARE_EVENT_FourParams(UStoreWidgetBase, FDragDropEvent, EUINumber, int32, EUINumber, int32);	// Param1: SrcUINumber, Param2: SrcSlotIndex, Param3: DstUINumber, Param4: DstSlotIndex
 
 public:
 	void SetSlotIndex(int InSlotIndex);
 	void SetParentUINumber(EUINumber UINumber);
 	void UpdateSlot(const FItemInfo& InItemInfo);
 
-	DECLARE_EVENT_OneParam(UItemSlotWidgetBase, FSlotHoverEvent, int32); // Param1: SlotIndex
-	FSlotHoverEvent OnHovered;
+	FSlotEvent& OnMouseOver();
+	FSlotEvent& OnMouseRButtonDown();
+	FDragDropEvent& OnDragDrop();
+
 
 private:
 	virtual void NativeConstruct() final;
 	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) final;
 	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) final;
-	
-	virtual auto CreateSrcDragDropOp() ->UDragDropOperation* final;
-	virtual void SetDstDragDropOp(UDragDropOperation* OutDragDropOp) final;
-	virtual auto CreateButtonDownOp(FKey key) -> USYMouseButtonDownOp* final;
+	virtual void OnDragDropInternal(UDragDropOperation* InOperation) final;
+	virtual void OnMouseRButtonDownInternal() final;
+
+
+	virtual auto CreatePayload()->UDragDropPayloadBase*;
+	virtual void SetPayloadOnDrop(UDragDropPayloadBase* Payload);
 
 	void BindWidget();
 	bool IsShowItemCount(const FItemInfo& InItemInfo);
 
 private:
-	EUINumber	ParentUINumber;
-	int			SlotIndex;
+	//EUINumber	ParentUINumber;
+	int				SlotIndex;
+	FSlotEvent		MouseOverEvent;
+	FSlotEvent		MouseRButtonDownEvent;
+	FDragDropEvent	DragDropEvent;
+
 
 	UPROPERTY()
 	class UImage* ItemIconImage;

@@ -6,7 +6,8 @@
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "UIOperation.h"
-#include "ItemSlotWidgetBase.h"
+//#include "ItemSlotWidgetBase.h"
+#include "SYInteractionWidgetItemSlot.h"
 #include "SYCharacter.h"
 #include "SYUtil.h"
 
@@ -22,12 +23,15 @@ void UStoreWidgetBase::BindWidget()
 	for (int StoreSlotIndex = 0; StoreSlotIndex < MaxStoreSlotCount; ++StoreSlotIndex)
 	{
 		FString WidgetName = FString::Printf(TEXT("ItemSlot_%d"), StoreSlotIndex);
-		UItemSlotWidgetBase* ItemSlotWidget = Cast<UItemSlotWidgetBase>(GetWidgetFromName(*WidgetName));
+		USYInteractionWidgetItemSlot* ItemSlotWidget = Cast<USYInteractionWidgetItemSlot>(GetWidgetFromName(*WidgetName));
 		if (ItemSlotWidget)
 		{
 			ItemSlotWidget->SetSlotIndex(StoreSlotIndex);
 			ItemSlotWidget->SetParentUINumber(EUINumber::Store);
-			ItemSlotWidget->OnHovered.AddUFunction(this, FName("OnMouseOverSlotInternal"));
+			ItemSlotWidget->OnMouseOver().AddUFunction(this, FName("OnMouseOverSlotInternal"));
+			ItemSlotWidget->OnDragDrop().AddUFunction(this, FName("OnDragDropInternal"));
+			ItemSlotWidget->OnMouseRButtonDown().AddUFunction(this, FName("OnMouseRButtonDownSlotInternal"));
+
 			ItemSlotWidgetList.Add(ItemSlotWidget);
 		}
 	}
@@ -52,7 +56,12 @@ void UStoreWidgetBase::BindWidget()
 
 void UStoreWidgetBase::OnMouseOverSlotInternal(int SlotIndex)
 {
-	OnMouseOverInSlot.Broadcast(SlotIndex);
+	MouseOverSlotEvent.Broadcast(SlotIndex);
+}
+
+void UStoreWidgetBase::OnMouseRButtonDownSlotInternal(int SlotIndex)
+{
+	MouseRButtonDownSlotEvent.Broadcast(SlotIndex);
 }
 
 void UStoreWidgetBase::OnClickChangeStoreButtonInternal()
@@ -60,8 +69,13 @@ void UStoreWidgetBase::OnClickChangeStoreButtonInternal()
 	if (StoreIDText)
 	{
 		int StoreID = FCString::Atoi(*StoreIDText->GetText().ToString());
-		OnClickedChangeStore.Broadcast(StoreID);
+		ChangeStoreEvent.Broadcast(StoreID);
 	}
+}
+
+void UStoreWidgetBase::OnDragDropInternal(EUINumber SrcUINumber, int32 StoreSlotIndex, EUINumber DstUINumber, int32 DstSlotIndex)
+{
+	DragDropEvent.Broadcast(SrcUINumber, StoreSlotIndex, DstUINumber, DstSlotIndex);
 }
 
 void UStoreWidgetBase::UpdatePriceText(int Price)

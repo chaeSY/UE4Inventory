@@ -26,15 +26,25 @@ public:
 	DECLARE_EVENT_OneParam(USYWidgetBase, FSYMouseButtonDownEvent, USYMouseButtonDownOp*);
 	FSYMouseButtonDownEvent OnMouseButtonDownEvent;
 
+
+public:
+	UFUNCTION()
+	virtual void OnDragDrop(UDragDropOperation* InOperation) {}
+
+	//삭제예정
 protected:
 	virtual auto CreateSrcDragDropOp() -> UDragDropOperation*;
 	virtual void SetDstDragDropOp(UDragDropOperation* OutDragDropOp);
 	virtual auto CreateButtonDownOp(FKey key) ->USYMouseButtonDownOp*;
 
+	//삭제예정
 private:
 	virtual FReply	NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) final;
 	virtual void	NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) final;
 	virtual bool	NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) final;
+
+
+
 
 protected:
 	EUINumber TempUINumber;

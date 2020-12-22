@@ -6,11 +6,31 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "SYUtil.h"
 #include "UIOperation.h"
+#include "SYWidgetBase.h"
 
 FReply USYInteractionWidgetBase::NativeOnMouseButtonDown(const FGeometry & InGeometry, const FPointerEvent & InMouseEvent)
 {
 	UE_LOG(LogTemp, Warning, TEXT("NativeOnMouseButtonDown: %s"), *Name);
-	FEventReply Reply = UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent, this, EKeys::LeftMouseButton);
+
+	FEventReply Reply;
+
+	// drag
+	{
+		Reply = UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent, this, EKeys::LeftMouseButton);
+	}
+
+	// buttondown
+	{
+		if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
+		{
+			OnMouseLButtonDownInternal();
+		}
+		else if (InMouseEvent.IsMouseButtonDown(EKeys::RightMouseButton))
+		{
+			OnMouseRButtonDownInternal();
+		}
+	}
+
 	return Reply.NativeReply;
 }
 
@@ -18,9 +38,13 @@ void USYInteractionWidgetBase::NativeOnDragDetected(const FGeometry & InGeometry
 {
 	Super::NativeOnDragDetected(InGeometry, InMouseEvent, OutOperation);
 
+	USYWidgetBase* ParentWidget = SYUtil::GetWidget(GetWorld(), ParentUINumber);
+	if (!ParentWidget)
+		return;
+
 	UDragDropOperation* op = NewObject<UDragDropOperation>();
 	op->OnDragged.AddDynamic(this, &USYInteractionWidgetBase::OnDragging);
-	op->OnDrop.AddDynamic(this, &USYInteractionWidgetBase::OnDragDrop);
+	op->OnDrop.AddDynamic(this, &USYInteractionWidgetBase::OnDragDropInternal);
 	op->Offset = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
 	op->Payload = CreatePayload();
 	
@@ -32,15 +56,15 @@ bool USYInteractionWidgetBase::NativeOnDrop(const FGeometry& InGeometry, const F
 {
 	UE_LOG(LogTemp, Warning, TEXT("NativeOnDrop: %s"), *Name);
 	
-	if (InOperation && InOperation->Payload)
+	if (InOperation && InOperation->Payload && InOperation->Payload->IsA(UDragDropPayloadBase::StaticClass()))
 	{
-		SetPayloadOnDrop(InOperation->Payload);
+		SetPayloadOnDrop(Cast<UDragDropPayloadBase>(InOperation->Payload));
 	}
 
 	return true;
 }
 
-void USYInteractionWidgetBase::OnDragDrop(UDragDropOperation* InOperation)
+void USYInteractionWidgetBase::OnDragDropInternal(UDragDropOperation* InOperation)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnDragDrop: %s"), *Name);
 }

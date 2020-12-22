@@ -11,6 +11,10 @@
 /**
  * 
  */
+
+class UDragDropOperation;
+class USYInteractionWidgetItemSlot;
+
 UCLASS(Blueprintable)
 class GAMEDATA_API UInventoryWidgetBase : public USYWidgetBase
 {
@@ -29,7 +33,6 @@ public:
 
 private:
 	virtual void NativeConstruct() override;
-	virtual void OnDragDrop(class UDragDropOperation* InDragDropOp);
 	virtual void OnButtonDown(class USYMouseButtonDownOp* InButtonDownOp);
 
 	void BindWidget();
@@ -38,7 +41,8 @@ private:
 	void UpdateWidgetTabColor(int PrevTabIndex);
 	void UpdateWidgetCash();
 
-	TArray<class UItemSlotWidgetBase*> ItemSlotWidgetList;
+	//TArray<class UItemSlotWidgetBase*> ItemSlotWidgetList;
+	TArray<USYInteractionWidgetItemSlot*> ItemSlotWidgetList;
 	class UButton* TabButton[Tab_End];
 	class UTextBlock* CashText;
 	class UButton* AddCashButton;
@@ -66,8 +70,6 @@ private:
 
 	int ConvertItemTypeToTabIndex(EItemType ItemType);
 
-
-
 	int CurrentTabIndex;
 	using ArrayHeap = TArray<int>;
 	TMap<int, TArray<FInventoryItemInfo>>	ItemInfoListMap;		// key: TabIndex Value: ItemInfoList
@@ -85,4 +87,16 @@ private:
 
 	UFUNCTION()
 	void OnClickAddCash();
+
+public:
+	DECLARE_EVENT_FourParams(UStoreWidgetBase, FSlotDragDropEvent, EUINumber, int32, EUINumber, int32);	// Param1: SrcUINumber, Param2: SrcSlotIndex, Param3: DstUINumber, Param4: DstSlotIndex
+
+	FSlotDragDropEvent DragDropEvent;
+
+	FSlotDragDropEvent& OnDragDrop2() {
+		return DragDropEvent;
+	}
+
+	UFUNCTION()
+	void OnDragDropInternal(EUINumber SrcUINumber, int32 InventorySlotIndex, EUINumber DstUINumber, int32 DstSlotIndex);
 };

@@ -10,6 +10,17 @@
 /**
  * 
  */
+
+UCLASS()
+class UDragDropPayloadBase : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	EUINumber SrcUINumber;
+	EUINumber DstUINumber;
+};
+
 class UDragDropOperation;
 
 UCLASS(Blueprintable, BlueprintType)
@@ -19,13 +30,16 @@ class GAMEDATA_API USYInteractionWidgetBase : public UUserWidget
 
 protected:
 	UFUNCTION()
-	virtual void OnDragDrop(UDragDropOperation* InOperation);
+	virtual void OnDragDropInternal(UDragDropOperation* InOperation);
 
 	UFUNCTION()
 	virtual void OnDragging(UDragDropOperation* InOperation);
 
-	virtual auto CreatePayload()->UObject* { return nullptr; }
-	virtual void SetPayloadOnDrop(UObject* Payload) {}
+	virtual void OnMouseLButtonDownInternal() {}
+	virtual void OnMouseRButtonDownInternal() {}
+
+	virtual auto CreatePayload()->UDragDropPayloadBase* { return nullptr; }
+	virtual void SetPayloadOnDrop(UDragDropPayloadBase* Payload) {}
 
 private:
 	virtual FReply	NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
@@ -39,6 +53,4 @@ protected:
 	
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
 	EUINumber ParentUINumber;
-
-
 };
