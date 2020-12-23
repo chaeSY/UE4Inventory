@@ -6,13 +6,13 @@
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "UIOperation.h"
-//#include "ItemSlotWidgetBase.h"
 #include "SYInteractionWidgetItemSlot.h"
 #include "SYCharacter.h"
 #include "SYUtil.h"
 
 void UStoreWidgetBase::NativeConstruct()
 {
+	UINumber = EUINumber::Store;
 	SetVisibility(ESlateVisibility::Hidden);
 	BindWidget();
 }

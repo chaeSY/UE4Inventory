@@ -12,6 +12,17 @@
  */
 
 class USYWidgetBase;
+class USYUIBase;
+
+USTRUCT()
+struct FWidgetAndController
+{
+	GENERATED_BODY()
+	
+	USYWidgetBase* Widget = nullptr;
+	USYUIBase* Controller = nullptr;
+};
+
 
 UCLASS(Blueprintable, BlueprintType)
 class GAMEDATA_API UWidgetManager : public UUserWidget
@@ -27,6 +38,14 @@ public:
 		return Cast<T>(GetWidget(UINumber));
 	}
 
+	USYUIBase* GetController(EUINumber UINumber);
+
+	template<typename T>
+	T* GetController(EUINumber UINumber)
+	{
+		return Cast<T>(GetController(UINumber));
+	}
+	
 	bool IsVisible(EUINumber UINumber);
 	void ShowUI(EUINumber UINumber);
 	void HideUI(EUINumber UINumber);
@@ -39,10 +58,9 @@ private:
 	UPROPERTY()
 	TMap<EUINumber, USYWidgetBase*> UIMap;
 
-	//temp
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<class USYUIStore> StoreClass;
-
 	UPROPERTY()
-	class USYUIStore* UIStore;
+	TMap<EUINumber, FWidgetAndController> UIMap2;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TMap<EUINumber, TSubclassOf<USYUIBase>> ControllerClassMap;
 };

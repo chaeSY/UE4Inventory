@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "SYCharacter.h"
-#include "InventoryWidgetBase.h"
+#include "SYUIInventory.h"
 #include "SYUtil.h"
 
 ASYCharacter::ASYCharacter()
@@ -14,7 +14,7 @@ void ASYCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	// test
-	AddCash(10000);
+	UpdateCash(10000);
 }
 
 void ASYCharacter::Tick(float DeltaTime)
@@ -62,30 +62,38 @@ void ASYCharacter::OnKeyPress_Inventory()
 	}
 }
 
+ASYCharacter::FUpdateCashEvent& ASYCharacter::OnUpdateCash()
+{
+	return UpdateCashEvent;
+}
+
 int ASYCharacter::GetCash()
 {
 	return Cash;
 }
 
-void ASYCharacter::AddCash(int InAddedCash)
+void ASYCharacter::UpdateCash(int NewCash)
 {
-	Cash += InAddedCash;
+	Cash = NewCash;
+
+	UpdateCashEvent.Broadcast(Cash);
 }
 
 bool ASYCharacter::TryBuyItem(FItemKey ItemKey, int ItemCount, int ItemPrice)
 {
-	UInventoryWidgetBase* InventoryWidget = SYUtil::GetWidget<UInventoryWidgetBase>(GetWorld(), EUINumber::Inventory);
-	if(!InventoryWidget)
+	USYUIInventory* Inventory = SYUtil::GetUI<USYUIInventory>(GetWorld(), EUINumber::Inventory);
+	if(!Inventory)
 		return false;
-
-	int ResultPrice = ItemPrice * ItemCount;
-	if (Cash < ResultPrice)
+	
+	int FullPrice = ItemPrice * ItemCount;
+	if (Cash < FullPrice)
 		return false;
-
-	if (InventoryWidget->TryAddItem(ItemKey, ItemCount))
+	
+	if (Inventory->TryAddItem(ItemKey, ItemCount))
 	{
-		Cash -= ResultPrice;
-		InventoryWidget->OnBuyItem();
+		int NewCash = Cash - FullPrice;
+		UpdateCash(NewCash);
+
 		return true;
 	}
 
@@ -94,15 +102,16 @@ bool ASYCharacter::TryBuyItem(FItemKey ItemKey, int ItemCount, int ItemPrice)
 
 bool ASYCharacter::TrySellItem(int TabIndex, int ItemCount, int ItemPrice, int SlotIndex)
 {
-	UInventoryWidgetBase* InventoryWidget = SYUtil::GetWidget<UInventoryWidgetBase>(GetWorld(), EUINumber::Inventory);
-	if (!InventoryWidget)
+	USYUIInventory* Inventory = SYUtil::GetUI<USYUIInventory>(GetWorld(), EUINumber::Inventory);
+	if (!Inventory)
 		return false;
-
-	int ResultPrice = ItemPrice * ItemCount;
-	if (InventoryWidget->TrySubtractItem(TabIndex, ItemCount, SlotIndex))
+	
+	int FullPrice = ItemPrice * ItemCount;
+	if (Inventory->TrySubtractItem(TabIndex, ItemCount, SlotIndex))
 	{
-		Cash += ResultPrice;
-		InventoryWidget->OnBuyItem();
+		int NewCash = Cash + FullPrice;
+		UpdateCash(NewCash);
+
 		return true;
 	}
 

@@ -8,10 +8,15 @@
 #include "SYDefine.h"
 #include "SYCharacter.h"
 
-void USYUIStore::Bind()
+void USYUIStore::Init()
 {
-	Widget = SYUtil::GetWidget(this, EUINumber::Store);
-	StoreWidget = Cast<UStoreWidgetBase>(Widget);
+	UINumber = EUINumber::Store;
+	BindWidget();
+}
+
+void USYUIStore::BindWidget()
+{
+	StoreWidget = SYUtil::GetWidget<UStoreWidgetBase>(this, UINumber);
 	if (StoreWidget)
 	{
 		StoreWidget->OnDragDrop2().AddUFunction(this, FName("OnDragDropSlot"));

@@ -13,6 +13,7 @@ UCLASS()
 class GAMEDATA_API ASYCharacter : public ACharacter
 {
 	GENERATED_BODY()
+	DECLARE_EVENT_OneParam(ASYCharacter, FUpdateCashEvent, int32);	// Param1: Cash
 
 public:
 	ASYCharacter();
@@ -24,8 +25,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	FUpdateCashEvent& OnUpdateCash();
 	int	 GetCash();
-	void AddCash(int InAddedCash);
+	void UpdateCash(int NewCash);
 
 	bool TryBuyItem(FItemKey ItemKey, int ItemCount, int ItemPrice);
 	bool TrySellItem(int TabIndex, int ItemCount, int ItemPrice, int SlotIndex);
@@ -35,5 +37,6 @@ private:
 	void OnKeyPress_Inventory();
 
 private:
+	FUpdateCashEvent UpdateCashEvent;
 	int Cash = 0;
 };

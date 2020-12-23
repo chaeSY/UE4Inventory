@@ -2,19 +2,3 @@
 
 
 #include "SYUIBase.h"
-
-
-void USYUIBase::ShowUI()
-{
-	if (Widget)
-	{
-
-	}
-}
-void USYUIBase::HideUI()
-{
-	if (Widget)
-	{
-
-	}
-}

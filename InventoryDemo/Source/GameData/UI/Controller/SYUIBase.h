@@ -3,20 +3,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SYDefine.h"
 #include "SYUIBase.generated.h"
 
 /**
  * 
  */
+class USYWidgetBase;
+
 UCLASS()
 class GAMEDATA_API USYUIBase : public UObject
 {
 	GENERATED_BODY()
 
 public:
-	void ShowUI();
-	void HideUI();
-
+	virtual void Init() {}
+	
 protected:
-	class USYWidgetBase* Widget;
+	EUINumber UINumber;
 };

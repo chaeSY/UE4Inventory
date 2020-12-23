@@ -8,17 +8,30 @@
 /**
  * 
  */
+class UWidgetManager;
+class USYWidgetBase;
+class USYGameDataManager;
+class ASYPlayerController;
+class ASYCharacter;
+struct FSYTableBase;
+
 class SYUtil
 {
 public:
-	static class UWidgetManager* GetWidgetManager(const UObject* WorldContextObject);
-	static class USYWidgetBase* GetWidget(const UObject* WorldContextObject, EUINumber UINumber);
+	static ASYPlayerController* GetPlayerController(const UObject* WorldContextObject);
+	static ASYCharacter* GetCharacter(const UObject* WorldContextObject);
+
+	static USYUIBase* GetUI(const UObject* WorldContextObject, EUINumber UINumber);
+	template<typename T>
+	static T* GetUI(const UObject* WorldContextObject, EUINumber UINumber);
+
+	static UWidgetManager* GetWidgetManager(const UObject* WorldContextObject);
+	static USYWidgetBase* GetWidget(const UObject* WorldContextObject, EUINumber UINumber);
 	template<typename T>
 	static T* GetWidget(const UObject* WorldContextObject, EUINumber UINumber);
 
-
-	static class USYGameDataManager* GetGameDataManager(const UObject* WorldContextObject);
-	static struct FSYTableBase* GetGameData(const UObject* WorldContextObject, ETableType TableType, int ClassID);
+	static USYGameDataManager* GetGameDataManager(const UObject* WorldContextObject);
+	static FSYTableBase* GetGameData(const UObject* WorldContextObject, ETableType TableType, int ClassID);
 	template<typename T>
 	static T* GetGameData(const UObject* WorldContextObject, ETableType TableType, int ClassID);
 };
@@ -31,6 +44,12 @@ inline T * SYUtil::GetWidget(const UObject * WorldContextObject, EUINumber UINum
 		return nullptr;
 
 	return WidgetManager->GetWidget<T>(UINumber);
+}
+
+template<typename T>
+inline T * SYUtil::GetUI(const UObject * WorldContextObject, EUINumber UINumber)
+{
+	return Cast<T>(GetUI(WorldContextObject, UINumber));
 }
 
 template<typename T>

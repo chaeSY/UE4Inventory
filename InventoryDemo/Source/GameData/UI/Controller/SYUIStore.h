@@ -10,15 +10,20 @@
 /**
  * 
  */
+class UStoreWidgetBase;
+class USYWidgetBase;
+
 UCLASS()
 class GAMEDATA_API USYUIStore : public USYUIBase
 {
 	GENERATED_BODY()
 
 public:
-	void Bind(); // temp
+	virtual void Init() final;
 
 private:
+	void BindWidget();
+
 	bool TryBuyItem(int StoreSlotIndex);
 	void InitStoreItemInfo(int InStoreClassID);
 
@@ -35,6 +40,8 @@ private:
 	void OnClickedChangeStoreButton(int StoreID);
 
 private:
-	class UStoreWidgetBase* StoreWidget;
+	UPROPERTY()
+	UStoreWidgetBase* StoreWidget;
+
 	TArray<FStoreItemInfo>  StoreItemInfoList;
 };

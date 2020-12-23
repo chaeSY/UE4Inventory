@@ -9,7 +9,13 @@
 
 USYWidgetBase* UWidgetManager::GetWidget(EUINumber UINumber)
 {
-	return UIMap.FindRef(UINumber);
+	//return UIMap.FindRef(UINumber);
+	return UIMap2.FindRef(UINumber).Widget;
+}
+
+USYUIBase* UWidgetManager::GetController(EUINumber UINumber)
+{
+	return UIMap2.FindRef(UINumber).Controller;
 }
 
 bool UWidgetManager::IsVisible(EUINumber UINumber)
@@ -51,20 +57,37 @@ void UWidgetManager::NativeConstruct()
 void UWidgetManager::BindWidget()
 {
 	USYWidgetBase* Widget = nullptr;
-	Widget = Cast<UInventoryWidgetBase>(GetWidgetFromName(TEXT("Inventory")));
+	Widget = Cast<USYWidgetBase>(GetWidgetFromName(TEXT("Inventory")));
 	if (Widget)
+	{
 		UIMap.Add(EUINumber::Inventory, Widget);
+		
+		FWidgetAndController& WidgetAndController = UIMap2.FindOrAdd(Widget->UINumber);
+		WidgetAndController.Widget = Widget;
+	}
 
-	Widget = Cast<UStoreWidgetBase>(GetWidgetFromName(TEXT("Store")));
+	Widget = Cast<USYWidgetBase>(GetWidgetFromName(TEXT("Store")));
 	if (Widget)
+	{
 		UIMap.Add(EUINumber::Store, Widget);
 
-	if (StoreClass)
-	{
-		UIStore = NewObject<USYUIStore>(this, StoreClass);
-		if(UIStore)
-			UIStore->Bind();
+		FWidgetAndController& WidgetAndController = UIMap2.FindOrAdd(Widget->UINumber);
+		WidgetAndController.Widget = Widget;
 	}
-	
 
+
+	//FWidgetAndController& WidgetAndController = UIMap2.FindOrAdd(Widget->GetUINumber());
+	//WidgetAndController.Widget = Widget;
+
+	for(const auto& Pair: ControllerClassMap)
+	{
+		USYUIBase* UIBase = NewObject<USYUIBase>(this, Pair.Value);
+		if (UIBase)
+		{
+			UIBase->Init();
+			
+			FWidgetAndController& WidgetAndController = UIMap2.FindOrAdd(Pair.Key);
+			WidgetAndController.Controller = UIBase;
+		}
+	}
 }

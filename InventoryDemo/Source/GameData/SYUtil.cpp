@@ -5,6 +5,37 @@
 #include "Kismet/GameplayStatics.h"
 #include "SYPlayerController.h"
 #include "SYGameInstance.h"
+#include "SYCharacter.h"
+#include "SYUIBase.h"
+
+ASYPlayerController* SYUtil::GetPlayerController(const UObject* WorldContextObject)
+{
+	USYGameInstance* GameInstance = Cast<USYGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
+	if (!GameInstance)
+		return nullptr;
+
+	ASYPlayerController* PlayerController = Cast<ASYPlayerController>(GameInstance->GetFirstLocalPlayerController());
+	return PlayerController;
+}
+
+ASYCharacter* SYUtil::GetCharacter(const UObject* WorldContextObject)
+{
+	ASYPlayerController* Controller = GetPlayerController(WorldContextObject);
+	if (!Controller)
+		return nullptr;
+
+	ASYCharacter* Character = Cast<ASYCharacter>(Controller->GetCharacter());
+	return Character;
+}
+
+USYUIBase* SYUtil::GetUI(const UObject* WorldContextObject, EUINumber UINumber)
+{
+	UWidgetManager* WidgetManager = GetWidgetManager(WorldContextObject);
+	if (!WidgetManager)
+		return nullptr;
+
+	return WidgetManager->GetController(UINumber);
+}
 
 
 UWidgetManager* SYUtil::GetWidgetManager(const UObject * WorldContextObject)
