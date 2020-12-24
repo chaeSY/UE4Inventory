@@ -10,7 +10,6 @@
 /**
  * 
  */
-class UDragDropOperation;
 UCLASS(Blueprintable, BlueprintType)
 class GAMEDATA_API USYInteractionWidgetDefault : public USYInteractionWidgetBase
 {
@@ -19,5 +18,4 @@ class GAMEDATA_API USYInteractionWidgetDefault : public USYInteractionWidgetBase
 protected:
 	virtual auto CreatePayload()->UDragDropPayloadBase* override;
 	virtual void SetPayloadOnDrop(UDragDropPayloadBase* Payload) override;
-
 };

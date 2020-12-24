@@ -64,17 +64,17 @@ void USYInteractionWidgetItemSlot::UpdateSlot(const FItemInfo& InItemInfo)
 	}
 }
 
-USYInteractionWidgetItemSlot::FSlotEvent& USYInteractionWidgetItemSlot::OnMouseOver()
+FSlotEvent& USYInteractionWidgetItemSlot::OnMouseOver()
 {
 	return MouseOverEvent;
 }
 
-USYInteractionWidgetItemSlot::FSlotEvent& USYInteractionWidgetItemSlot::OnMouseRButtonDown()
+FSlotEvent& USYInteractionWidgetItemSlot::OnMouseRButtonDown()
 {
 	return MouseRButtonDownEvent;
 }
 
-USYInteractionWidgetItemSlot::FDragDropEvent& USYInteractionWidgetItemSlot::OnDragDrop()
+FSlotDragDropEvent& USYInteractionWidgetItemSlot::OnDragDrop()
 {
 	return DragDropEvent;
 }

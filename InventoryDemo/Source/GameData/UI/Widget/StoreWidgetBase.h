@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "SYWidgetBase.h"
 #include "ItemInfo.h"
+#include "SYWidgetDefine.h"
 #include "StoreWidgetBase.generated.h"
 
 /**
@@ -19,38 +20,18 @@ UCLASS()
 class GAMEDATA_API UStoreWidgetBase : public USYWidgetBase
 {
 	GENERATED_BODY()
-	DECLARE_EVENT_OneParam(UStoreWidgetBase, FOnClickChangeStoreButton, int32); // Param1: StoreID
-	DECLARE_EVENT_OneParam(UStoreWidgetBase, FSlotEvent, int32);			    // Param1: SlotIndex
-	DECLARE_EVENT_FourParams(UStoreWidgetBase, FSlotDragDropEvent, EUINumber, int32, EUINumber, int32);	// Param1: SrcUINumber, Param2: SrcSlotIndex, Param3: DstUINumber, Param4: DstSlotIndex
+	DECLARE_EVENT_OneParam(UStoreWidgetBase, FChangeStoreButtonEvent, int32 /* StoreID */);
 
 public:
 	enum { MaxStoreSlotCount = 20 };
 
+	FSlotEvent& OnSlotHover();
+	FSlotEvent& OnSlotRButtonDown();
+	FSlotDragDropEvent& OnSlotDragDrop();
+	FChangeStoreButtonEvent& OnButtonClickedChangeStore();
+
 	void UpdateSlot(int SlotIndex, const FItemInfo& ItemInfo);
 	void UpdatePriceText(int Price);
-
-	FOnClickChangeStoreButton& OnClickedChangeStoreButton() {
-		return ChangeStoreEvent;
-	}
-
-	FSlotEvent& OnMouseOverSlot(){
-		return MouseOverSlotEvent;
-	}
-	
-	FSlotEvent& OnMouseRButtonDownSlot() {
-		return MouseRButtonDownSlotEvent;
-	}
-
-	FSlotDragDropEvent& OnDragDrop2() {
-		return DragDropEvent;
-	}
-
-
-private:
-	FOnClickChangeStoreButton ChangeStoreEvent;
-	FSlotEvent MouseRButtonDownSlotEvent;
-	FSlotEvent MouseOverSlotEvent;
-	FSlotDragDropEvent DragDropEvent;
 
 private:
 	virtual void NativeConstruct() final;
@@ -68,8 +49,12 @@ private:
 	UFUNCTION()
 	void OnDragDropInternal(EUINumber SrcUINumber, int32 StoreSlotIndex, EUINumber DstUINumber, int32 DstSlotIndex);
 
-
 private:
+	FChangeStoreButtonEvent ChangeStoreEvent;
+	FSlotEvent SlotRButtonDownEvent;
+	FSlotEvent SlotHoverEvent;
+	FSlotDragDropEvent SlotDragDropEvent;
+
 	UPROPERTY()
 	TArray<USYInteractionWidgetItemSlot*> ItemSlotWidgetList;
 

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SYDefine.generated.h"
 
 UENUM(BlueprintType)
 enum class EItemType : uint8

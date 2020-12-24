@@ -9,7 +9,6 @@
 
 USYWidgetBase* UWidgetManager::GetWidget(EUINumber UINumber)
 {
-	//return UIMap.FindRef(UINumber);
 	return UIMap2.FindRef(UINumber).Widget;
 }
 
@@ -74,10 +73,6 @@ void UWidgetManager::BindWidget()
 		FWidgetAndController& WidgetAndController = UIMap2.FindOrAdd(Widget->UINumber);
 		WidgetAndController.Widget = Widget;
 	}
-
-
-	//FWidgetAndController& WidgetAndController = UIMap2.FindOrAdd(Widget->GetUINumber());
-	//WidgetAndController.Widget = Widget;
 
 	for(const auto& Pair: ControllerClassMap)
 	{

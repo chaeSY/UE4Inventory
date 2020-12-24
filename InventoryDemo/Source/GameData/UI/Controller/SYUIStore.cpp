@@ -19,10 +19,10 @@ void USYUIStore::BindWidget()
 	StoreWidget = SYUtil::GetWidget<UStoreWidgetBase>(this, UINumber);
 	if (StoreWidget)
 	{
-		StoreWidget->OnDragDrop2().AddUFunction(this, FName("OnDragDropSlot"));
-		StoreWidget->OnMouseOverSlot().AddUFunction(this, FName("OnMouseOverInSlot"));
-		StoreWidget->OnMouseRButtonDownSlot().AddUFunction(this, FName("OnMouseRButtonDownSlot"));
-		StoreWidget->OnClickedChangeStoreButton().AddUFunction(this, FName("OnClickedChangeStoreButton"));
+		StoreWidget->OnSlotDragDrop().AddUFunction(this, FName("OnDragDropSlot"));
+		StoreWidget->OnSlotHover().AddUFunction(this, FName("OnMouseOverInSlot"));
+		StoreWidget->OnSlotRButtonDown().AddUFunction(this, FName("OnMouseRButtonDownSlot"));
+		StoreWidget->OnButtonClickedChangeStore().AddUFunction(this, FName("OnClickedChangeStoreButton"));
 	}
 
 	//test

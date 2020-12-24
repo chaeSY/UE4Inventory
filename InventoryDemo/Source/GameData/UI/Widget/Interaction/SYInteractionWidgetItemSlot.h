@@ -5,12 +5,11 @@
 #include "CoreMinimal.h"
 #include "SYInteractionWidgetBase.h"
 #include "SYDefine.h"
+#include "SYWidgetDefine.h"
 #include "SYInteractionWidgetItemSlot.generated.h"
 /**
  * 
  */
-
-struct FItemInfo;
 
 UCLASS()
 class UDragDropPayloadSlot : public UDragDropPayloadBase
@@ -22,22 +21,25 @@ public:
 	int DstSlotIndex;
 };
 
+struct FItemInfo;
+class UImage;
+class UBorder;
+class UTextBlock;
+class UTexture2D;
+
 UCLASS()
 class GAMEDATA_API USYInteractionWidgetItemSlot : public USYInteractionWidgetBase
 {
 	GENERATED_BODY()
-	DECLARE_EVENT_OneParam(USYInteractionWidgetBase, FSlotEvent, int32); // Param1: SlotIndex
-	DECLARE_EVENT_FourParams(UStoreWidgetBase, FDragDropEvent, EUINumber, int32, EUINumber, int32);	// Param1: SrcUINumber, Param2: SrcSlotIndex, Param3: DstUINumber, Param4: DstSlotIndex
 
 public:
+	FSlotEvent& OnMouseOver();
+	FSlotEvent& OnMouseRButtonDown();
+	FSlotDragDropEvent& OnDragDrop();
+
 	void SetSlotIndex(int InSlotIndex);
 	void SetParentUINumber(EUINumber UINumber);
 	void UpdateSlot(const FItemInfo& InItemInfo);
-
-	FSlotEvent& OnMouseOver();
-	FSlotEvent& OnMouseRButtonDown();
-	FDragDropEvent& OnDragDrop();
-
 
 private:
 	virtual void NativeConstruct() final;
@@ -46,7 +48,6 @@ private:
 	virtual void OnDragDropInternal(UDragDropOperation* InOperation) final;
 	virtual void OnMouseRButtonDownInternal() final;
 
-
 	virtual auto CreatePayload()->UDragDropPayloadBase*;
 	virtual void SetPayloadOnDrop(UDragDropPayloadBase* Payload);
 
@@ -54,12 +55,10 @@ private:
 	bool IsShowItemCount(const FItemInfo& InItemInfo);
 
 private:
-	//EUINumber	ParentUINumber;
-	int				SlotIndex;
-	FSlotEvent		MouseOverEvent;
-	FSlotEvent		MouseRButtonDownEvent;
-	FDragDropEvent	DragDropEvent;
-
+	int					SlotIndex;
+	FSlotEvent			MouseOverEvent;
+	FSlotEvent			MouseRButtonDownEvent;
+	FSlotDragDropEvent	DragDropEvent;
 
 	UPROPERTY()
 	class UImage* ItemIconImage;

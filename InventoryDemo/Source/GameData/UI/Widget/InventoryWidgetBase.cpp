@@ -6,15 +6,10 @@
 #include "Components/Button.h"
 #include "Components/Border.h"
 #include "Kismet/GameplayStatics.h"
+#include "SYInteractionWidgetItemSlot.h"
 #include "UIOperation.h"
 #include "SYCharacter.h"
 #include "SYUtil.h"
-#include "SYInteractionWidgetItemSlot.h"
-
-void UInventoryWidgetBase::OnBuyItem()
-{
-//	UpdateCash();
-}
 
 void UInventoryWidgetBase::NativeConstruct()
 {
@@ -25,11 +20,10 @@ void UInventoryWidgetBase::NativeConstruct()
 	UpdateTabColor(INDEX_NONE, EquipmentTab);
 	UpdateCash(0);
 
-	for (int i = 0; i < ItemSlotWidgetList.Num(); ++i)
+	for (int SlotIndex = 0; SlotIndex < ItemSlotWidgetList.Num(); ++SlotIndex)
 	{
-		ItemSlotWidgetList[i]->UpdateSlot(FInventoryItemInfo::Empty);
+		UpdateSlot(SlotIndex, FInventoryItemInfo::Empty);
 	}
-
 }
 
 void UInventoryWidgetBase::BindWidget()
@@ -147,4 +141,25 @@ void UInventoryWidgetBase::OnSlotRButtonDownInternal(int SlotIndex)
 void UInventoryWidgetBase::OnClickedTabInternal(int TabIndex)
 {
 	TabButtonDownEvent.Broadcast(TabIndex);
+}
+
+
+FSlotDragDropEvent& UInventoryWidgetBase::OnSlotDragDrop()
+{
+	return SlotDragDropEvent;
+}
+
+FSlotEvent& UInventoryWidgetBase::OnSlotRButtonDown()
+{
+	return SlotRButtonDownEvent;
+}
+
+FTabEvent& UInventoryWidgetBase::OnClickedTab()
+{
+	return TabButtonDownEvent;
+}
+
+FButtonEvent& UInventoryWidgetBase::OnClickeAddCash()
+{
+	return AddCashButtonDownEvent;
 }

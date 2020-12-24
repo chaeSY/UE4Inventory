@@ -93,3 +93,23 @@ void UStoreWidgetBase::UpdateSlot(int SlotIndex, const FItemInfo& ItemInfo)
 		ItemSlotWidgetList[SlotIndex]->UpdateSlot(ItemInfo);
 	}
 }
+
+UStoreWidgetBase::FChangeStoreButtonEvent& OnButtonClickedChangeStore()
+{
+	return ChangeStoreEvent;
+}
+
+FSlotEvent& OnSlotHover()
+{
+	return SlotHoverEvent;
+}
+
+FSlotEvent& OnSlotRButtonDown()
+{
+	return SlotRButtonDownEvent;
+}
+
+FSlotDragDropEvent& OnSlotDragDrop()
+{
+	return SlotDragDropEvent;
+}

@@ -75,7 +75,6 @@ int ASYCharacter::GetCash()
 void ASYCharacter::UpdateCash(int NewCash)
 {
 	Cash = NewCash;
-
 	UpdateCashEvent.Broadcast(Cash);
 }
 
