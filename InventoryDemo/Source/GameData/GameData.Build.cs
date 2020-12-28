@@ -23,12 +23,12 @@ public class GameData : ModuleRules
         PublicIncludePaths.AddRange(
                                     new string[] {
                                         ModuleDirectory,
-                                        ModuleDirectory + "/GameData",
-                                        ModuleDirectory + "/UI/Operation",
-                                        ModuleDirectory + "/UI/Widget",
-                                        ModuleDirectory + "/UI/Widget/Interaction",
-                                        ModuleDirectory + "/UI/Controller",
-
+                                        ModuleDirectory + "/Public",
+                                        ModuleDirectory + "/Public/GameData",
+                                        ModuleDirectory + "/Public/UI/Widget",
+                                        ModuleDirectory + "/Public/UI/Widget/Interaction",
+                                        ModuleDirectory + "/Public/UI/Widget/SYWidget",
+                                        ModuleDirectory + "/Public/UI/Controller",
                                     }
                                     );
     }
