@@ -145,31 +145,35 @@ void USYUIInventory::RemoveItem(int TabIndex, int SlotIndex)
 }
 
 
-////////////
 void USYUIInventory::OnSlotDragDrop(EUINumber SrcUINumber, int32 SrcSlotIndex, EUINumber DstUINumber, int32 DstSlotIndex)
 {
+	const FInventoryItemInfo& SrcItemInfo = GetItemInfo(CurrentTabIndex, SrcSlotIndex);
+	bool IsEmptySrcSlot = SrcItemInfo.ItemKey.ID == 0;
+	if (IsEmptySrcSlot)
+		return;
+
 	if (DstUINumber == EUINumber::Inventory)
 	{
 		if (SrcSlotIndex == DstSlotIndex)
 			return;
 	
-		const FInventoryItemInfo& SrcItemInfo = GetItemInfo(CurrentTabIndex, SrcSlotIndex);
 		const FInventoryItemInfo& DstItemInfo = GetItemInfo(CurrentTabIndex, DstSlotIndex);
-		bool IsEmptySrcSlot = SrcItemInfo.ItemKey.ID == 0;
 		bool IsEmptyDstSlot = DstItemInfo.ItemKey.ID == 0;
-		if (!IsEmptySrcSlot)
+	
+		if (IsEmptyDstSlot)
 		{
-			if (IsEmptyDstSlot)
-			{
-				FInventoryItemInfo NewItemInfo = FItemInfoFactory::CreateInventoryItemInfo(GetWorld(), SrcItemInfo.ItemKey, SrcItemInfo.Count, DstSlotIndex);
-				AddItem(NewItemInfo);
-				RemoveItem(CurrentTabIndex, SrcSlotIndex);
-			}
-			else // !IsEmptyDstSlot
-			{
-				SwapItem(SrcSlotIndex, DstSlotIndex);
-			}
+			FInventoryItemInfo NewItemInfo = FItemInfoFactory::CreateInventoryItemInfo(GetWorld(), SrcItemInfo.ItemKey, SrcItemInfo.Count, DstSlotIndex);
+			AddItem(NewItemInfo);
+			RemoveItem(CurrentTabIndex, SrcSlotIndex);
 		}
+		else // !IsEmptyDstSlot
+		{
+			SwapItem(SrcSlotIndex, DstSlotIndex);
+		}
+	}
+	else if (DstUINumber == EUINumber::Screen)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Hello Screen"));
 	}
 }
 

@@ -55,12 +55,12 @@ void UStoreWidgetBase::BindWidget()
 
 void UStoreWidgetBase::OnMouseOverSlotInternal(int SlotIndex)
 {
-//	MouseOverSlotEvent.Broadcast(SlotIndex);
+	SlotHoverEvent.Broadcast(SlotIndex);
 }
 
 void UStoreWidgetBase::OnMouseRButtonDownSlotInternal(int SlotIndex)
 {
-//	MouseRButtonDownSlotEvent.Broadcast(SlotIndex);
+	SlotRButtonDownEvent.Broadcast(SlotIndex);
 }
 
 void UStoreWidgetBase::OnClickChangeStoreButtonInternal()
@@ -74,7 +74,7 @@ void UStoreWidgetBase::OnClickChangeStoreButtonInternal()
 
 void UStoreWidgetBase::OnDragDropInternal(EUINumber SrcUINumber, int32 StoreSlotIndex, EUINumber DstUINumber, int32 DstSlotIndex)
 {
-//	DragDropEvent.Broadcast(SrcUINumber, StoreSlotIndex, DstUINumber, DstSlotIndex);
+	SlotDragDropEvent.Broadcast(SrcUINumber, StoreSlotIndex, DstUINumber, DstSlotIndex);
 }
 
 void UStoreWidgetBase::UpdatePriceText(int Price)
