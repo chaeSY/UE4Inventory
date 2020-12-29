@@ -7,6 +7,7 @@
 #include "SYGameInstance.h"
 #include "SYCharacter.h"
 #include "SYUIBase.h"
+#include "SYUIManager.h"
 
 ASYPlayerController* SYUtil::GetPlayerController(const UObject* WorldContextObject)
 {
@@ -28,39 +29,6 @@ ASYCharacter* SYUtil::GetCharacter(const UObject* WorldContextObject)
 	return Character;
 }
 
-USYUIBase* SYUtil::GetUI(const UObject* WorldContextObject, EUINumber UINumber)
-{
-	UWidgetManager* WidgetManager = GetWidgetManager(WorldContextObject);
-	if (!WidgetManager)
-		return nullptr;
-
-	return WidgetManager->GetController(UINumber);
-}
-
-
-UWidgetManager* SYUtil::GetWidgetManager(const UObject * WorldContextObject)
-{
-	USYGameInstance* GameInstance = Cast<USYGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
-	if (!GameInstance)
-		return nullptr;
-
-	ASYPlayerController* PlayerController = Cast<ASYPlayerController>(GameInstance->GetFirstLocalPlayerController());
-	if (!PlayerController)
-		return nullptr;
-	
-	return PlayerController->GetWidgetManager();
-}
-
-USYWidgetBase* SYUtil::GetWidget(const UObject* WorldContextObject, EUINumber UINumber)
-{
-	UWidgetManager* WidgetManager = GetWidgetManager(WorldContextObject);
-	if (!WidgetManager)
-		return nullptr;
-
-	return WidgetManager->GetWidget(UINumber);
-}
-
-
 USYGameDataManager* SYUtil::GetGameDataManager(const UObject * WorldContextObject)
 {
 	USYGameInstance* GameInstance = Cast<USYGameInstance>(UGameplayStatics::GetGameInstance(WorldContextObject));
@@ -77,4 +45,26 @@ FSYTableBase * SYUtil::GetGameData(const UObject * WorldContextObject, ETableTyp
 		return nullptr;
 
 	return GameDataManager->GetGameData(TableType, ClassID);
+}
+
+USYUIManager* SYUtil::GetUIManager(const UObject* WorldContextObject)
+{
+	ASYPlayerController* PC = GetPlayerController(WorldContextObject);
+	if (PC)
+	{
+		return PC->GetUIManager();
+	}
+
+	return nullptr;
+}
+
+USYUIBase* SYUtil::GetUI(const UObject* WorldContextObject, EUINumber UINumber)
+{
+	USYUIManager* UIManager = GetUIManager(WorldContextObject);
+	if (UIManager)
+	{
+		return UIManager->GetUI(UINumber);
+	}
+
+	return nullptr;
 }

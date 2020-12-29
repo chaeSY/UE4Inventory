@@ -16,5 +16,5 @@ class GAMEDATA_API USYWidgetScreen : public USYWidgetBase
 	GENERATED_BODY()
 
 private:
-	virtual void NativeConstruct() final;
+	virtual void NativeConstruct() override final;
 };

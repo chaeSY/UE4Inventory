@@ -17,8 +17,9 @@ class GAMEDATA_API USYUIBase : public UObject
 	GENERATED_BODY()
 
 public:
-	virtual void Init() {}
-	
+	virtual void Init(EUINumber InUINumber, USYWidgetBase* InWidget);
+
 protected:
 	EUINumber UINumber;
+	USYWidgetBase* Widget;
 };

@@ -18,7 +18,7 @@ class GAMEDATA_API USYUIScreen : public USYUIBase
 	GENERATED_BODY()
 
 public:
-	virtual void Init() final;
+	virtual void Init(EUINumber InUINumber, USYWidgetBase* InWidget) override final;
 
 private:
 	UPROPERTY()

@@ -3,5 +3,5 @@
 
 void USYWidgetScreen::NativeConstruct()
 {
-	UINumber = EUINumber::Screen;
+
 }

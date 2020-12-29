@@ -7,15 +7,15 @@
 #include "SYDefine.h"
 #include "SYCharacter.h"
 
-void USYUIStore::Init()
+void USYUIStore::Init(EUINumber InUINumber, USYWidgetBase* InWidget)
 {
-	UINumber = EUINumber::Store;
+	Super::Init(InUINumber, InWidget);
 	BindWidget();
 }
 
 void USYUIStore::BindWidget()
 {
-	StoreWidget = SYUtil::GetWidget<UStoreWidgetBase>(this, UINumber);
+	StoreWidget = Cast<UStoreWidgetBase>(Widget);
 	if (StoreWidget)
 	{
 		StoreWidget->OnSlotDragDrop().AddUFunction(this, FName("OnDragDropSlot"));
@@ -43,12 +43,11 @@ void USYUIStore::OnMouseRButtonDownSlot(int SlotIndex)
 
 bool USYUIStore::TryBuyItem(int StoreSlotIndex)
 {
-	// HACK?
-	ASYCharacter* Character = Cast<ASYCharacter>(GetWorld()->GetFirstPlayerController()->GetCharacter());
-	if (!Character)
+	if (!StoreItemInfoList.IsValidIndex(StoreSlotIndex))
 		return false;
 
-	if (!StoreItemInfoList.IsValidIndex(StoreSlotIndex))
+	ASYCharacter* Character = SYUtil::GetCharacter(GetWorld());
+	if (!Character)
 		return false;
 
 	const FStoreItemInfo& StoreItemInfo = StoreItemInfoList[StoreSlotIndex];
@@ -82,6 +81,9 @@ void USYUIStore::OnMouseOverInSlot(int SlotIndex)
 
 void USYUIStore::OnClickedChangeStoreButton(int StoreID)
 {
+	if (!StoreWidget)
+		return;
+
 	InitStoreItemInfo(StoreID);
 
 	for (int SlotIndex = 0; SlotIndex < UStoreWidgetBase::MaxStoreSlotCount; ++SlotIndex)

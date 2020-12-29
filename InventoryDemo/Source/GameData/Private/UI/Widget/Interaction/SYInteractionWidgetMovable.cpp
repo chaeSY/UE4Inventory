@@ -6,22 +6,21 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/CanvasPanelSlot.h"
 #include "SYWidgetBase.h"
-#include "WidgetManager.h"
 #include "SYUtil.h"
+#include "SYUIManager.h"
 
 void USYInteractionWidgetMovable::OnMouseLButtonDownInternal()
 {
-	UWidgetManager* wm = SYUtil::GetWidgetManager(GetWorld());
-	if (wm)
+	USYUIManager* UIManager = SYUtil::GetUIManager(GetWorld());
+	if (UIManager)
 	{
-		wm->SetNextZOrderToUI(ParentUINumber);
+		UIManager->SetNextZOrderToUI(ParentUINumber);
 	}
-
 }
 
 void USYInteractionWidgetMovable::OnDragging(UDragDropOperation* InOperation)
 {
-	USYWidgetBase* ParentWidget = SYUtil::GetWidget(GetWorld(), ParentUINumber);
+	USYWidgetBase* ParentWidget = GetWidget();
 	if (!ParentWidget)
 		return;
 	

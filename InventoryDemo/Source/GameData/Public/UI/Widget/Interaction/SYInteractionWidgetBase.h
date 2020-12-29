@@ -22,6 +22,8 @@ public:
 };
 
 class UDragDropOperation;
+class USYUIManager;
+class USYWidgetBase;
 
 UCLASS(Blueprintable, BlueprintType)
 class GAMEDATA_API USYInteractionWidgetBase : public UUserWidget
@@ -40,6 +42,8 @@ protected:
 
 	virtual auto CreatePayload()->UDragDropPayloadBase* { return nullptr; }
 	virtual void SetPayloadOnDrop(UDragDropPayloadBase* Payload) {}
+
+	USYWidgetBase* GetWidget();
 
 private:
 	virtual FReply	NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;

@@ -11,8 +11,6 @@
 
 void UStoreWidgetBase::NativeConstruct()
 {
-	UINumber = EUINumber::Store;
-	SetVisibility(ESlateVisibility::Hidden);
 	BindWidget();
 }
 

@@ -12,9 +12,6 @@
 
 void UInventoryWidgetBase::NativeConstruct()
 {
-	UINumber = EUINumber::Inventory;
-	SetVisibility(ESlateVisibility::Hidden);
-
 	BindWidget();
 	UpdateTabColor(INDEX_NONE, EquipmentTab);
 	UpdateCash(0);
@@ -108,17 +105,17 @@ void UInventoryWidgetBase::UpdateCash(int Cash)
 
 void UInventoryWidgetBase::OnClickEquipmentTab()
 {
-	//OnClickTab(EquipmentTab);
+	OnClickedTabInternal(EquipmentTab);
 }
 
 void UInventoryWidgetBase::OnClickConsumableTab()
 {
-	//OnClickTab(ConsumableTab);
+	OnClickedTabInternal(ConsumableTab);
 }
 
 void UInventoryWidgetBase::OnClickEtcTab()
 {
-	//OnClickTab(EtcTab);
+	OnClickedTabInternal(EtcTab);
 }
 
 void UInventoryWidgetBase::OnClickAddCashInternal()
@@ -136,12 +133,10 @@ void UInventoryWidgetBase::OnSlotRButtonDownInternal(int SlotIndex)
 	SlotRButtonDownEvent.Broadcast(SlotIndex);
 }
 
-
 void UInventoryWidgetBase::OnClickedTabInternal(int TabIndex)
 {
 	TabButtonDownEvent.Broadcast(TabIndex);
 }
-
 
 FSlotDragDropEvent& UInventoryWidgetBase::OnSlotDragDrop()
 {

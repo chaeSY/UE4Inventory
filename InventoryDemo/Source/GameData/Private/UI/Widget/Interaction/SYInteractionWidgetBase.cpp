@@ -6,6 +6,7 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "SYUtil.h"
 #include "SYWidgetBase.h"
+#include "SYUIManager.h"
 
 FReply USYInteractionWidgetBase::NativeOnMouseButtonDown(const FGeometry & InGeometry, const FPointerEvent & InMouseEvent)
 {
@@ -37,7 +38,7 @@ void USYInteractionWidgetBase::NativeOnDragDetected(const FGeometry & InGeometry
 {
 	Super::NativeOnDragDetected(InGeometry, InMouseEvent, OutOperation);
 
-	USYWidgetBase* ParentWidget = SYUtil::GetWidget(GetWorld(), ParentUINumber);
+	USYWidgetBase* ParentWidget = GetWidget();
 	if (!ParentWidget)
 		return;
 
@@ -71,4 +72,15 @@ void USYInteractionWidgetBase::OnDragDropInternal(UDragDropOperation* InOperatio
 void USYInteractionWidgetBase::OnDragging(UDragDropOperation* InOperation)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnDragging: %s"), *Name);
+}
+
+USYWidgetBase* USYInteractionWidgetBase::GetWidget()
+{
+	USYUIManager* UIManager = SYUtil::GetUIManager(GetWorld());
+	if (UIManager)
+	{
+		return UIManager->GetWidgetInternal(ParentUINumber);
+	}
+
+	return nullptr;
 }

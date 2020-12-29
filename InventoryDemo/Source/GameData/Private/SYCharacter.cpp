@@ -2,6 +2,8 @@
 #include "SYCharacter.h"
 #include "SYUIInventory.h"
 #include "SYUtil.h"
+#include "SYUIStore.h"
+#include "SYUIManager.h"
 
 ASYCharacter::ASYCharacter()
 {
@@ -32,32 +34,32 @@ void ASYCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void ASYCharacter::OnKeyPress_Shop()
 {
-	UWidgetManager* WidgetManager = SYUtil::GetWidgetManager(GetWorld());
-	if (WidgetManager)
+	USYUIManager* UIManager = SYUtil::GetUIManager(GetWorld());
+	if (UIManager)
 	{
-		if (!WidgetManager->IsVisible(EUINumber::Store))
+		if (!UIManager->IsVisible(EUINumber::Store))
 		{
-			WidgetManager->ShowUI(EUINumber::Store);
+			UIManager->ShowUI(EUINumber::Store);
 		}
 		else
 		{
-			WidgetManager->HideUI(EUINumber::Store);
+			UIManager->HideUI(EUINumber::Store);
 		}
 	}
 }
 
 void ASYCharacter::OnKeyPress_Inventory()
 {
-	UWidgetManager* WidgetManager = SYUtil::GetWidgetManager(GetWorld());
-	if (WidgetManager)
+	USYUIManager* UIManager = SYUtil::GetUIManager(GetWorld());
+	if (UIManager)
 	{
-		if (!WidgetManager->IsVisible(EUINumber::Inventory))
+		if (!UIManager->IsVisible(EUINumber::Inventory))
 		{
-			WidgetManager->ShowUI(EUINumber::Inventory);
+			UIManager->ShowUI(EUINumber::Inventory);
 		}
 		else
 		{
-			WidgetManager->HideUI(EUINumber::Inventory);
+			UIManager->HideUI(EUINumber::Inventory);
 		}
 	}
 }

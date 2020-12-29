@@ -23,5 +23,6 @@ public:
 	void SetZOrder(int ZOrder);
 
 public:
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	EUINumber UINumber;
 };

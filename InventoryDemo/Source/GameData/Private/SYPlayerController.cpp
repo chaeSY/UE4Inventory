@@ -2,26 +2,21 @@
 
 
 #include "SYPlayerController.h"
-#include "UI/Widget/WidgetManager.h"
-
-
-UWidgetManager* ASYPlayerController::GetWidgetManager()
-{
-	return WidgetManager;
-}
+#include "SYUIManager.h"
+#include "SYWidgetLayout.h"
 
 void ASYPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (WidgetManagerClass)
+	if (UIManagerClass)
 	{
-		WidgetManager = CreateWidget<UWidgetManager>(this, WidgetManagerClass);
-		if (WidgetManager)
-		{
-			WidgetManager->AddToViewport();
-		}
+		UIManager = NewObject<USYUIManager>(this, UIManagerClass);
+		if (UIManager)
+			UIManager->InitUIManager();
 	}
-	
+
 	bShowMouseCursor = true;
 }
+
+

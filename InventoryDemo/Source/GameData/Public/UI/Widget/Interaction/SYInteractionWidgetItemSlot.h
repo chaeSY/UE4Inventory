@@ -42,11 +42,11 @@ public:
 	void UpdateSlot(const FItemInfo& InItemInfo);
 
 private:
-	virtual void NativeConstruct() final;
-	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) final;
-	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) final;
-	virtual void OnDragDropInternal(UDragDropOperation* InOperation) final;
-	virtual void OnMouseRButtonDownInternal() final;
+	virtual void NativeConstruct() override final;
+	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override final;
+	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override final;
+	virtual void OnDragDropInternal(UDragDropOperation* InOperation) override final;
+	virtual void OnMouseRButtonDownInternal() override final;
 
 	virtual auto CreatePayload()->UDragDropPayloadBase*;
 	virtual void SetPayloadOnDrop(UDragDropPayloadBase* Payload);

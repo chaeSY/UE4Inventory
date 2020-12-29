@@ -7,12 +7,12 @@
 #include "SYDefine.h"
 #include "SYCharacter.h"
 #include "InventoryWidgetBase.h"
+#include "SYUIManager.h"
 
-void USYUIInventory::Init()
+void USYUIInventory::Init(EUINumber InUINumber, USYWidgetBase* InWidget)
 {
-	UINumber = EUINumber::Inventory;
+	Super::Init(InUINumber, InWidget);
 	BindWidget();
-	
 	InitContainer();
 
 	ASYCharacter* Character = SYUtil::GetCharacter(GetWorld());
@@ -20,12 +20,11 @@ void USYUIInventory::Init()
 	{
 		Character->OnUpdateCash().AddUFunction(this, FName("OnUpdateCash"));
 	}
-
 }
 
 void USYUIInventory::BindWidget()
 {
-	InventoryWidget = SYUtil::GetWidget<UInventoryWidgetBase>(this, UINumber);
+	InventoryWidget = Cast<UInventoryWidgetBase>(Widget);
 	if (InventoryWidget)
 	{
 		InventoryWidget->OnClickedTab().AddUFunction(this, FName("OnClickedTab"));
@@ -173,14 +172,14 @@ void USYUIInventory::OnSlotDragDrop(EUINumber SrcUINumber, int32 SrcSlotIndex, E
 	}
 	else if (DstUINumber == EUINumber::Screen)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Hello Screen"));
+		RemoveItem(CurrentTabIndex, SrcSlotIndex);
 	}
 }
 
 void USYUIInventory::OnSlotRButtonDown(int SlotIndex)
 {
-	UWidgetManager* WidgetManager = SYUtil::GetWidgetManager(GetWorld());
-	if (WidgetManager && WidgetManager->IsVisible(EUINumber::Store))
+	USYUIManager* UIManager = SYUtil::GetUIManager(GetWorld());
+	if (UIManager && UIManager->IsVisible(EUINumber::Store))
 	{
 		ASYCharacter* Character = SYUtil::GetCharacter(GetWorld());
 		if (!Character)
@@ -308,7 +307,6 @@ void USYUIInventory::UpdateItemCount(int TabIndex, int SlotIndex, int ItemCount)
 				InventoryWidget->UpdateSlot(SlotIndex, InventoryItemInfo);
 		}
 	}
-
 }
 
 auto USYUIInventory::GetItemInfoList(FItemKey ItemKey) -> TArray<const FInventoryItemInfo*>

@@ -19,12 +19,11 @@ class GAMEDATA_API USYUIInventory : public USYUIBase
 	GENERATED_BODY()
 
 public:
-	virtual void Init() final;
+	virtual void Init(EUINumber InUINumber, USYWidgetBase* InWidget) override final;
 
 private:
 	void BindWidget();
 
-/////////////////////
 	enum { EquipmentTab = 0, ConsumableTab = 1, EtcTab = 2, Tab_End };
 
 public:

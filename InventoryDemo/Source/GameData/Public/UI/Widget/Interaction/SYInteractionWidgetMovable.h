@@ -17,6 +17,6 @@ class GAMEDATA_API USYInteractionWidgetMovable: public USYInteractionWidgetBase
 	GENERATED_BODY()
 
 protected:
-	virtual void OnMouseLButtonDownInternal() final;
-	virtual void OnDragging(UDragDropOperation* InOperation) final;
+	virtual void OnMouseLButtonDownInternal() override final;
+	virtual void OnDragging(UDragDropOperation* InOperation) override final;
 };

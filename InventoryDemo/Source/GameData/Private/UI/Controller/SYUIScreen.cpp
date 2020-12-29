@@ -3,7 +3,8 @@
 
 #include "SYUIScreen.h"
 
-void USYUIScreen::Init()
+void USYUIScreen::Init(EUINumber InUINumber, USYWidgetBase* InWidget)
 {
-	UINumber = EUINumber::Screen;
+	Super::Init(InUINumber, InWidget);
+
 }

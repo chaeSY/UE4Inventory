@@ -3,48 +3,33 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
 #include "SYDefine.h"
-#include "WidgetManager.generated.h"
+#include "SYUIManager.generated.h"
 
 /**
  * 
  */
 
-class USYWidgetBase;
 class USYUIBase;
+class USYWidgetBase;
+class USYWidgetLayout;
+class USYInteractionWidgetBase;
 
-USTRUCT()
-struct FWidgetAndController
+UCLASS(Blueprintable)
+class GAMEDATA_API USYUIManager : public UObject
 {
 	GENERATED_BODY()
-	
-	USYWidgetBase* Widget = nullptr;
-	USYUIBase* Controller = nullptr;
-};
 
-UCLASS(Blueprintable, BlueprintType)
-class GAMEDATA_API UWidgetManager : public UUserWidget
-{
-	GENERATED_BODY()
-	
 public:
-	USYWidgetBase* GetWidget(EUINumber UINumber);
-	
-	template<typename T>
-	T* GetWidget(EUINumber UINumber)
-	{
-		return Cast<T>(GetWidget(UINumber));
-	}
-
-	USYUIBase* GetController(EUINumber UINumber);
+	USYUIBase* GetUI(EUINumber UINumber);
 
 	template<typename T>
-	T* GetController(EUINumber UINumber)
+	T* GetUI(EUINumber UINumber)
 	{
-		return Cast<T>(GetController(UINumber));
+		return Cast<T>(GetUI(UINumber));
 	}
-	
+
+	void InitUIManager();
 	bool IsVisible(EUINumber UINumber);
 	void ShowUI(EUINumber UINumber);
 	void HideUI(EUINumber UINumber);
@@ -52,8 +37,9 @@ public:
 	void SetNextZOrderToUI(EUINumber UINumber);
 
 private:
-	virtual void NativeConstruct() final;
-	void BindWidget();
+	friend USYInteractionWidgetBase;
+
+	USYWidgetBase* GetWidgetInternal(EUINumber UINumber);
 
 	enum FixedZOrder { FixedZOrder_Screen = 0, FixedZOrder_End };
 	void ResetNextZOrder();
@@ -61,14 +47,22 @@ private:
 	bool SortByZOrder(EUINumber UINumber1, EUINumber UINumber2);
 
 private:
-	UPROPERTY()
-	TMap<EUINumber, FWidgetAndController> UIMap;
 
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	TMap<EUINumber, TSubclassOf<USYUIBase>> ControllerClassMap;
+	TSubclassOf<USYWidgetLayout> LayoutWidgetClass;
+
+	UPROPERTY()
+	USYWidgetLayout* LayoutWidget;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	TMap<EUINumber, TSubclassOf<USYUIBase>> UIClassMap;
+
+	UPROPERTY()
+	TMap<EUINumber, USYUIBase*> UIMap;
 
 	UPROPERTY()
 	TArray<EUINumber> VisibleUI; // screen¿∫ ¡¶ø‹
+
 
 	int NextZOrder = FixedZOrder_End;
 };
