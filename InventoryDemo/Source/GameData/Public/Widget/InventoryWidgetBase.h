@@ -17,16 +17,17 @@ class USYInteractionWidgetItemSlot;
 class UButton;
 class UTextBlock;
 
-UCLASS(Blueprintable)
+enum EInventoryTab { InventoryTab_Equipment, InventoryTab_Consumable, InventoryTab_Etc, InventoryTab_End };
+enum { MaxInventorySlotCount = 8 };
+
+UCLASS()
 class GAMEDATA_API UInventoryWidgetBase : public USYWidgetBase
 {
 	GENERATED_BODY()
 
 public:
-	enum { InventorySlotCount = 8 };
-	enum { EquipmentTab = 0, ConsumableTab = 1, EtcTab = 2, Tab_End };
+	static bool IsValidTab(int TabIndex);
 
-public:
 	FSlotDragDropEvent& OnSlotDragDrop();
 	FSlotEvent& OnSlotRButtonDown();
 	FTabEvent& OnClickedTab();
@@ -43,14 +44,13 @@ private:
 	FButtonEvent		AddCashButtonDownEvent;
 
 	TArray<USYInteractionWidgetItemSlot*> ItemSlotWidgetList;
-	UButton* TabButton[Tab_End];
+	UButton* TabButton[InventoryTab_End];
 	UButton* AddCashButton;
 	UTextBlock* CashText;
 
 private:
 	virtual void NativeConstruct() override;
 	void BindWidget();
-
 
 	UFUNCTION()
 	void OnSlotDragDropInternal(EUINumber SrcUINumber, int32 InventorySlotIndex, EUINumber DstUINumber, int32 DstSlotIndex);
@@ -64,7 +64,6 @@ private:
 	UFUNCTION()
 	void OnClickAddCashInternal();
 
-	// @TODO: tab button 다시 구현
 	UFUNCTION()
 	void OnClickEquipmentTab();
 

@@ -19,6 +19,7 @@ UCLASS(Blueprintable)
 class GAMEDATA_API USYUIManager : public UObject
 {
 	GENERATED_BODY()
+	friend USYInteractionWidgetBase;
 
 public:
 	USYUIBase* GetUI(EUINumber UINumber);
@@ -37,8 +38,6 @@ public:
 	void SetNextZOrderToUI(EUINumber UINumber);
 
 private:
-	friend USYInteractionWidgetBase;
-
 	USYWidgetBase* GetWidgetInternal(EUINumber UINumber);
 
 	enum FixedZOrder { FixedZOrder_Screen = 0, FixedZOrder_End };
@@ -47,7 +46,6 @@ private:
 	bool SortByZOrder(EUINumber UINumber1, EUINumber UINumber2);
 
 private:
-
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<USYWidgetLayout> LayoutWidgetClass;
 
@@ -62,7 +60,6 @@ private:
 
 	UPROPERTY()
 	TArray<EUINumber> VisibleUI; // screen¿∫ ¡¶ø‹
-
 
 	int NextZOrder = FixedZOrder_End;
 };

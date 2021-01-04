@@ -204,7 +204,7 @@ void USYUIInventory::OnClickedTab(int TabIndex)
 	{
 		InventoryWidget->UpdateTabColor(PrevTabIndex, CurrentTabIndex);
 
-		for (int SlotIndex = 0; SlotIndex < UInventoryWidgetBase::InventorySlotCount; ++SlotIndex)
+		for (int SlotIndex = 0; SlotIndex < MaxInventorySlotCount; ++SlotIndex)
 		{
 			const FInventoryItemInfo& ItemInfo = GetItemInfo(CurrentTabIndex, SlotIndex);
 			InventoryWidget->UpdateSlot(SlotIndex, ItemInfo);
@@ -217,14 +217,12 @@ void USYUIInventory::InitContainer()
 	ItemInfoListMap.Empty();
 	EmptySlotMap.Empty();
 
-	const int InventorySlotCount = UInventoryWidgetBase::InventorySlotCount;
-
 	// init ItemInfoListMap
-	for (int TabIndex = 0; TabIndex < Tab_End; ++TabIndex)
+	for (int TabIndex = 0; TabIndex < InventoryTab_End; ++TabIndex)
 	{
 		ItemInfoListMap.Add(TabIndex, TArray<FInventoryItemInfo>());
-		ItemInfoListMap[TabIndex].Reserve(InventorySlotCount);
-		for (int InvenSlotIndex = 0; InvenSlotIndex < InventorySlotCount; ++InvenSlotIndex)
+		ItemInfoListMap[TabIndex].Reserve(MaxInventorySlotCount);
+		for (int InvenSlotIndex = 0; InvenSlotIndex < MaxInventorySlotCount; ++InvenSlotIndex)
 		{
 			FInventoryItemInfo InvenItemInfo;
 			InvenItemInfo.SlotIndex = InvenSlotIndex;
@@ -233,11 +231,11 @@ void USYUIInventory::InitContainer()
 	}
 
 	// init EmptySlotMap
-	for (int TabIndex = 0; TabIndex < Tab_End; ++TabIndex)
+	for (int TabIndex = 0; TabIndex < InventoryTab_End; ++TabIndex)
 	{
 		EmptySlotMap.Add(TabIndex, TArray<int>());
-		EmptySlotMap[TabIndex].Reserve(InventorySlotCount);
-		for (int invenSlotIndex = 0; invenSlotIndex < InventorySlotCount; ++invenSlotIndex)
+		EmptySlotMap[TabIndex].Reserve(MaxInventorySlotCount);
+		for (int invenSlotIndex = 0; invenSlotIndex < MaxInventorySlotCount; ++invenSlotIndex)
 		{
 			EmptySlotMap[TabIndex].Add(invenSlotIndex);
 		}
@@ -441,18 +439,18 @@ int USYUIInventory::ConvertItemTypeToTabIndex(EItemType ItemType)
 {
 	if (ItemType == EItemType::Equipment)
 	{
-		return EquipmentTab;
+		return InventoryTab_Equipment;
 	}
 	else if (ItemType == EItemType::Consumable)
 	{
-		return ConsumableTab;
+		return InventoryTab_Consumable;
 	}
 	else if (ItemType == EItemType::Etc)
 	{
-		return EtcTab;
+		return InventoryTab_Etc;
 	}
 
-	return Tab_End;
+	return InventoryTab_End;
 }
 
 void USYUIInventory::OnClickedAddCash()

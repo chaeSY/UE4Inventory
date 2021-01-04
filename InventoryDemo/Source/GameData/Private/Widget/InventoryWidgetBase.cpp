@@ -10,10 +10,15 @@
 #include "SYCharacter.h"
 #include "SYUtil.h"
 
+bool UInventoryWidgetBase::IsValidTab(int TabIndex)
+{
+	return TabIndex >= 0 && TabIndex < InventoryTab_End;
+}
+
 void UInventoryWidgetBase::NativeConstruct()
 {
 	BindWidget();
-	UpdateTabColor(INDEX_NONE, EquipmentTab);
+	UpdateTabColor(INDEX_NONE, InventoryTab_Equipment);
 	UpdateCash(0);
 
 	for (int SlotIndex = 0; SlotIndex < ItemSlotWidgetList.Num(); ++SlotIndex)
@@ -25,7 +30,7 @@ void UInventoryWidgetBase::NativeConstruct()
 void UInventoryWidgetBase::BindWidget()
 {
 	// binding ItemSlotWidgetList
-	for (int InvenSlotIdex = 0; InvenSlotIdex < InventorySlotCount; ++InvenSlotIdex)
+	for (int InvenSlotIdex = 0; InvenSlotIdex < MaxInventorySlotCount; ++InvenSlotIdex)
 	{
 		FString WidgetName = FString::Printf(TEXT("InventorySlot_%d"), InvenSlotIdex);
 		USYInteractionWidgetItemSlot* ItemSlotWidget = Cast<USYInteractionWidgetItemSlot>(GetWidgetFromName(*WidgetName));
@@ -40,28 +45,29 @@ void UInventoryWidgetBase::BindWidget()
 	}
 
 	// binding Tab
-	for (int TabIndex = 0; TabIndex < Tab_End; ++TabIndex)
+	for (int TabIndex = 0; TabIndex < InventoryTab_End; ++TabIndex)
 	{
-		FString BorderName = FString::Printf(TEXT("TabButton_%d"), TabIndex);
-		TabButton[TabIndex] = Cast<UButton>(GetWidgetFromName(*BorderName));
+		if (IsValidTab(TabIndex))
+		{
+			FString BorderName = FString::Printf(TEXT("TabButton_%d"), TabIndex);
+			TabButton[TabIndex] = Cast<UButton>(GetWidgetFromName(*BorderName));
+		}
 	}
 
-	if (TabButton[EquipmentTab])
-		TabButton[EquipmentTab]->OnClicked.AddDynamic(this, &UInventoryWidgetBase::OnClickEquipmentTab);
+	if (TabButton[InventoryTab_Equipment])
+		TabButton[InventoryTab_Equipment]->OnClicked.AddDynamic(this, &UInventoryWidgetBase::OnClickEquipmentTab);
 
-	if (TabButton[ConsumableTab])
-		TabButton[ConsumableTab]->OnClicked.AddDynamic(this, &UInventoryWidgetBase::OnClickConsumableTab);
+	if (TabButton[InventoryTab_Consumable])
+		TabButton[InventoryTab_Consumable]->OnClicked.AddDynamic(this, &UInventoryWidgetBase::OnClickConsumableTab);
 
-	if (TabButton[EtcTab])
-		TabButton[EtcTab]->OnClicked.AddDynamic(this, &UInventoryWidgetBase::OnClickEtcTab);
-
+	if (TabButton[InventoryTab_Etc])
+		TabButton[InventoryTab_Etc]->OnClicked.AddDynamic(this, &UInventoryWidgetBase::OnClickEtcTab);
 
 	// binding cash
 	CashText = Cast<UTextBlock>(GetWidgetFromName(TEXT("CashText")));
 	AddCashButton = Cast<UButton>(GetWidgetFromName(TEXT("AddCashButton")));
 	if (AddCashButton)
 		AddCashButton->OnClicked.AddDynamic(this, &UInventoryWidgetBase::OnClickAddCashInternal);
-
 }
 
 void UInventoryWidgetBase::UpdateSlot(int SlotIndex, const FItemInfo& InItemInfo)
@@ -74,7 +80,7 @@ void UInventoryWidgetBase::UpdateSlot(int SlotIndex, const FItemInfo& InItemInfo
 
 void UInventoryWidgetBase::UpdateTabColor(int PrevTabIndex, int CurrentTabIndex)
 {
-	if (PrevTabIndex >= 0 && PrevTabIndex < Tab_End)
+	if (IsValidTab(PrevTabIndex))
 	{
 		FLinearColor DefaultTabColor(1.f, 1.f, 1.f, 0.8f);
 		if (TabButton[PrevTabIndex])
@@ -84,7 +90,7 @@ void UInventoryWidgetBase::UpdateTabColor(int PrevTabIndex, int CurrentTabIndex)
 		}
 	}
 
-	if (CurrentTabIndex >= 0 && CurrentTabIndex < Tab_End)
+	if (IsValidTab(CurrentTabIndex))
 	{
 		FLinearColor SelectedTabColor(1.f, 0.6f, 0.f, 1.f);
 		if (TabButton[CurrentTabIndex])
@@ -105,17 +111,17 @@ void UInventoryWidgetBase::UpdateCash(int Cash)
 
 void UInventoryWidgetBase::OnClickEquipmentTab()
 {
-	OnClickedTabInternal(EquipmentTab);
+	OnClickedTabInternal(InventoryTab_Equipment);
 }
 
 void UInventoryWidgetBase::OnClickConsumableTab()
 {
-	OnClickedTabInternal(ConsumableTab);
+	OnClickedTabInternal(InventoryTab_Consumable);
 }
 
 void UInventoryWidgetBase::OnClickEtcTab()
 {
-	OnClickedTabInternal(EtcTab);
+	OnClickedTabInternal(InventoryTab_Etc);
 }
 
 void UInventoryWidgetBase::OnClickAddCashInternal()

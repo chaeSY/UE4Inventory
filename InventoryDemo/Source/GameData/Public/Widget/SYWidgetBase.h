@@ -14,7 +14,7 @@ class UDragDropOperation;
 class USYMouseButtonDownOp;
 class USYDragDropOp;
 
-UCLASS(Blueprintable, BlueprintType)
+UCLASS()
 class GAMEDATA_API USYWidgetBase : public UUserWidget
 {
 	GENERATED_BODY()

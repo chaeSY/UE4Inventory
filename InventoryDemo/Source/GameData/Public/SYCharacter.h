@@ -13,17 +13,10 @@ UCLASS()
 class GAMEDATA_API ASYCharacter : public ACharacter
 {
 	GENERATED_BODY()
-	DECLARE_EVENT_OneParam(ASYCharacter, FUpdateCashEvent, int32);	// Param1: Cash
+	DECLARE_EVENT_OneParam(ASYCharacter, FUpdateCashEvent, int32 /* Cash */);
 
 public:
 	ASYCharacter();
-
-protected:
-	virtual void BeginPlay() override;
-
-public:	
-	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	FUpdateCashEvent& OnUpdateCash();
 	int	 GetCash();
@@ -33,6 +26,10 @@ public:
 	bool TrySellItem(int TabIndex, int ItemCount, int ItemPrice, int SlotIndex);
 
 private:
+	virtual void Tick(float DeltaTime) override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void BeginPlay() override;
+
 	void OnKeyPress_Shop();
 	void OnKeyPress_Inventory();
 

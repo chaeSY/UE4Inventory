@@ -86,7 +86,7 @@ void USYUIStore::OnClickedChangeStoreButton(int StoreID)
 
 	InitStoreItemInfo(StoreID);
 
-	for (int SlotIndex = 0; SlotIndex < UStoreWidgetBase::MaxStoreSlotCount; ++SlotIndex)
+	for (int SlotIndex = 0; SlotIndex < MaxStoreSlotCount; ++SlotIndex)
 	{
 		if (StoreItemInfoList.IsValidIndex(SlotIndex))
 		{

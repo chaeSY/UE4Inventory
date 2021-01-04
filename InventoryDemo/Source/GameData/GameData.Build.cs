@@ -25,9 +25,9 @@ public class GameData : ModuleRules
                                         ModuleDirectory,
                                         ModuleDirectory + "/Public",
                                         ModuleDirectory + "/Public/GameData",
-                                        ModuleDirectory + "/Public/UI/Widget",
-                                        ModuleDirectory + "/Public/UI/Widget/Interaction",
-                                        ModuleDirectory + "/Public/UI/Controller",
+                                        ModuleDirectory + "/Public/Widget",
+                                        ModuleDirectory + "/Public/Widget/Interaction",
+                                        ModuleDirectory + "/Public/UI",
                                     }
                                     );
     }

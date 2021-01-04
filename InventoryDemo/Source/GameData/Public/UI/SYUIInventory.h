@@ -21,22 +21,14 @@ class GAMEDATA_API USYUIInventory : public USYUIBase
 public:
 	virtual void Init(EUINumber InUINumber, USYWidgetBase* InWidget) override final;
 
-private:
-	void BindWidget();
-
-	enum { EquipmentTab = 0, ConsumableTab = 1, EtcTab = 2, Tab_End };
-
-public:
 	bool TryAddItem(FItemKey ItemKey, int ItemCount);
 	bool TrySubtractItem(int TabIndex, int SubtractCount, int SlotIndex);
 	bool TrySubtractItemInSlotOrder(const FItemInfo& SubtractItemInfo, int SubtractCount);
 	void RemoveItem(int TabIndex, int SlotIndex);
 
-	void OnBuyItem();
-	void OnClickTab(int TabIndex);
-
 private:
 	void InitContainer();
+	void BindWidget();
 
 	auto GetItemInfo(int TabIndex, int SlotIndex) ->const FInventoryItemInfo&;
 	int	 GetEmptySlotIndex(int TabIndex);

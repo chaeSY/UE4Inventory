@@ -16,6 +16,8 @@ class USYInteractionWidgetItemSlot;
 class UDragDropOperation;
 class USYMouseButtonDownOp;
 
+enum { MaxStoreSlotCount = 20 };
+
 UCLASS()
 class GAMEDATA_API UStoreWidgetBase : public USYWidgetBase
 {
@@ -23,8 +25,6 @@ class GAMEDATA_API UStoreWidgetBase : public USYWidgetBase
 	DECLARE_EVENT_OneParam(UStoreWidgetBase, FChangeStoreButtonEvent, int32 /* StoreID */);
 
 public:
-	enum { MaxStoreSlotCount = 20 };
-
 	FSlotEvent& OnSlotHover();
 	FSlotEvent& OnSlotRButtonDown();
 	FSlotDragDropEvent& OnSlotDragDrop();
