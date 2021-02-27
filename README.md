@@ -29,4 +29,4 @@
   상점의 아이템을 인벤토리로 드래그 앤 드롭하면 구매를 시도합니다. <br/>
   상점의 아이템을 우클릭하면 구매를 시도합니다. <br/>
 
-<img src="https://github.com/chaeSY/InventoryDemo/blob/main/Image/Table,GameDataManager.PNG?raw=true" widget="20%" height="20%" title=""></img><br/>
+<img src="https://github.com/chaeSY/InventoryDemo/blob/main/Image/Table,GameDataManager.PNG?raw=true" width="20%" height="20%" title=""></img><br/>
