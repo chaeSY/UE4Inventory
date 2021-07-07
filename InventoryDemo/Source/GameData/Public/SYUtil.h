@@ -26,6 +26,7 @@ public:
 	template<typename T>
 	static T* GetGameData(const UObject* WorldContextObject, ETableType TableType, int ClassID);
 
+
 	static USYUIManager* GetUIManager(const UObject* WorldContextObject);
 	static USYUIBase* GetUI(const UObject* WorldContextObject, EUINumber UINumber);
 	template<typename T>
